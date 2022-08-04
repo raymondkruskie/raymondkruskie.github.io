@@ -1,0 +1,21 @@
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 900;
+  src: url(https://fonts.gstatic.com/s/lato/v23/S6u9w4BMUTPHh50XSwiPHA.ttf) format('truetype');
+}
+body {
+  background-color: #000000;
+  margin: 0;
+  padding: 0;
+}
+canvas {
+  background-color: #000000;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#canvas-number {
+  width: 680px;
+  height: 420px;
+}
