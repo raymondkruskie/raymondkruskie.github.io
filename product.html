@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products | Wiyasa Jaya Perkasa</title>
+  <link rel="icon" type="image/x-icon" href="assets/Logo/WJPLogoOnly.png">
+  <link href="css/bootstrap.css" rel="stylesheet">
+  <script src="js/bootstrap.bundle.js"></script>
+  <script src="https://kit.fontawesome.com/2035b7df18.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary shadow sticky-top">
+    <div class="container">
+      <img class="col-md-2 col-sm-4 col-5" src="assets/Logo/WJPLogoFull.png" href="#" alt="Wiyasa Jaya Perkasa Logo">
+      <button class="navbar-toggler border-0 p-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarToggler">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="about.html">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="Product.html">Product</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="contact.html">Contact</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- WhatsApp Floating Button-->
+  <a href="https://wa.me/+628116386800" class="float" target="_blank">
+    <i class="fab fa-whatsapp my-float text-light"></i>
+  </a>
+
+  <section class="text-center">
+    <div class="container py-lg-4 py-3 animate__animated animate__fadeInUp">
+      <h1 class="Montserrat-font fw-bold">Brand dan Produk Kami</h1>
+      <p class="text-muted">Kami menyediakan berbagai macam produk dari merek terpercaya untuk kebutuhan proyek Anda.</p>
+      <!-- Filter Section -->
+      <div class="row justify-content-between">
+        <div class="col-lg-12 col-md-6 col-sm-12">
+          <input type="text" id="searchInput" class="form-control rounded-pill" placeholder="Cari produk..." onkeyup="filterProducts()">
+        </div>
+
+        <!-- Category Buttons Section -->
+        <div class="col-12 row text-center my-3 justify-content-around">
+          <button class="col-2 btn btn-outline-secondary m-1 px-1 rounded-image" onclick="filterProductsByCategory('')">Semua Kategori</button>
+          <button class="col-2 btn btn-outline-secondary m-1 px-1 rounded-image" onclick="filterProductsByCategory('AksesorisBataRingan')">Aksesoris Bata Ringan</button>
+          <button class="col-3 btn btn-outline-secondary m-1 px-1 rounded-image" onclick="filterProductsByCategory('BajaRinganDanSpandek')">Baja Ringan dan Spandek</button>
+          <button class="col-2 btn btn-outline-secondary m-1 px-1 rounded-image" onclick="filterProductsByCategory('BataRingan')">Bata Ringan</button>
+          <button class="col-1 btn btn-outline-secondary m-1 px-1 rounded-image" onclick="filterProductsByCategory('Besi')">Besi</button>
+          <button class="col-1 btn btn-outline-secondary m-1 px-1 rounded-image" onclick="filterProductsByCategory('Gypsum')">Gypsum</button>
+          <button class="col-2 btn btn-outline-secondary m-1 px-1 rounded-image" onclick="filterProductsByCategory('KabelDuctingNiso')">Kabel Ducting Niso</button>
+          <button class="col-2 btn btn-outline-secondary m-1 px-1 rounded-image" onclick="filterProductsByCategory('Masko')">Masko</button>
+          <button class="col-2 btn btn-outline-secondary m-1 px-1 rounded-image" onclick="filterProductsByCategory('PanelLantai')">Panel Lantai</button>
+          <button class="col-2 btn btn-outline-secondary m-1 px-1 rounded-image" onclick="filterProductsByCategory('PipaAir')">Pipa Air</button>
+          <button class="col-2 btn btn-outline-secondary m-1 px-1 rounded-image" onclick="filterProductsByCategory('Semen')">Semen</button>
+          <button class="col-2 btn btn-outline-secondary m-1 px-1 rounded-image" onclick="filterProductsByCategory('SemenMortar')">Semen Mortar</button>
+        </div>
+      </div>
+
+      <!-- Products Section -->
+      <div id="productList" class="row justify-content-between">
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="AksesorisBataRingan" data-rating="5" data-pdf="assets/Essentials/AksesorisBataRingan/GergajiPotongBataRingan.png">
+          <img src="assets/Essentials/AksesorisBataRingan/GergajiPotongBataRingan.png" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Gergaji Bata Ringan</p>
+          <p class="text-muted">Rating: 5 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="AksesorisBataRingan" data-rating="5" data-pdf="assets/Essentials/AksesorisBataRingan/TrowelBataRingan.png">
+          <img src="assets/Essentials/AksesorisBataRingan/TrowelBataRingan.png" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Trowel Bata Ringan</p>
+          <p class="text-muted">Rating: 5 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="BajaRinganDanSpandek" data-rating="5" data-pdf="assets/Essentials/BajaRinganDanSpandek/CanalC.jpg">
+          <img src="assets/Essentials/BajaRinganDanSpandek/CanalC.jpg" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Canal-C</p>
+          <p class="text-muted">Rating: 5 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="BajaRinganDanSpandek" data-rating="4" data-pdf="assets/Essentials/BajaRinganDanSpandek/FuringBesi.jpg">
+          <img src="assets/Essentials/BajaRinganDanSpandek/FuringBesi.jpg" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Furing Besi</p>
+          <p class="text-muted">Rating: 4 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="BajaRinganDanSpandek" data-rating="4" data-pdf="assets/Essentials/BajaRinganDanSpandek/Hollow.jpg">
+          <img src="assets/Essentials/BajaRinganDanSpandek/Hollow.jpg" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Hollow</p>
+          <p class="text-muted">Rating: 4 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="BajaRinganDanSpandek" data-rating="3" data-pdf="assets/Essentials/BajaRinganDanSpandek/Reng.jpg">
+          <img src="assets/Essentials/BajaRinganDanSpandek/Reng.jpg" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Reng</p>
+          <p class="text-muted">Rating: 3 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="BataRingan" data-rating="3" data-pdf="assets/Essentials/BataRingan/bataringan.png">
+          <img src="assets/Essentials/BataRingan/bataringan.png" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Bata Ringan</p>
+          <p class="text-muted">Rating: 3 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="Besi" data-rating="3" data-pdf="assets/Essentials/Besi/BesiBetonPolos.jpg">
+          <img src="assets/Essentials/Besi/BesiBetonPolos.jpg" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Besi Beton Polos</p>
+          <p class="text-muted">Rating: 3 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="Besi" data-rating="3" data-pdf="assets/Essentials/Besi/BesiUlir.jpg">
+          <img src="assets/Essentials/Besi/BesiUlir.jpg" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Besi Ulir</p>
+          <p class="text-muted">Rating: 3 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="Besi" data-rating="3" data-pdf="assets/Essentials/Besi/WireMesh.jpg">
+          <img src="assets/Essentials/Besi/WireMesh.jpg" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Wire Mesh</p>
+          <p class="text-muted">Rating: 3 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="Gypsum" data-rating="3" data-pdf="assets/Essentials/Gypsum/Knauf-Product-Catalogue.pdf">
+          <img src="assets/Essentials/Gypsum/KnaufGypsum9mm.jpg" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Knauf Gypsum 9mm</p>
+          <p class="text-muted">Rating: 3 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="Gypsum" data-rating="3" data-pdf="assets/Essentials/KabelDuctingNiso/BrochureNISO2021.pdf">
+          <img src="assets/Essentials/KabelDuctingNiso/Logo Niso.png" class="img-fluid rounded-image object-fit-contain mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Kabel Ducting Niso</p>
+          <p class="text-muted">Rating: 3 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="PanelLantai" data-rating="3" data-pdf="assets/Essentials/PanelLantai/PanelLantaiElephant.jpg">
+          <img src="assets/Essentials/PanelLantai/PanelLantaiElephant.jpg" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Panel Lantai Elephant</p>
+          <p class="text-muted">Rating: 3 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="Semen" data-rating="3" data-pdf="assets/Essentials/Semen/SemenGaruda.jfif">
+          <img src="assets/Essentials/Semen/SemenGaruda.jfif" class="img-fluid rounded-image object-fit-contain mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Semen Garuda</p>
+          <p class="text-muted">Rating: 3 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="Semen" data-rating="3" data-pdf="assets/Essentials/Semen/SemenMerahPutih.jpg">
+          <img src="assets/Essentials/Semen/SemenMerahPutih.jpg" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Besi Beton Polos</p>
+          <p class="text-muted">Rating: 3 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="SemenMortar" data-rating="3" data-pdf="assets/Essentials/SemenMortar/Bru880.jpg">
+          <img src="assets/Essentials/SemenMortar/Bru880.jpg" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Bru 880</p>
+          <p class="text-muted">Rating: 3 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="SemenMortar" data-rating="3" data-pdf="assets/Essentials/SemenMortar/Bru882.png">
+          <img src="assets/Essentials/SemenMortar/Bru882.png" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Bru 882</p>
+          <p class="text-muted">Rating: 3 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="SemenMortar" data-rating="3" data-pdf="assets/Essentials/SemenMortar/Bru884.jpg">
+          <img src="assets/Essentials/SemenMortar/Bru884.jpg" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Bru 884</p>
+          <p class="text-muted">Rating: 3 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="SemenMortar" data-rating="3"  data-pdf="assets/Essentials/SemenMortar/Bru887.jpg">
+          <img src="assets/Essentials/SemenMortar/Bru887.jpg" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Bru 887</p>
+          <p class="text-muted">Rating: 3 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="SemenMortar" data-rating="3"  data-pdf="assets/Essentials/SemenMortar/Bru888.jpg">
+          <img src="assets/Essentials/SemenMortar/Bru888.jpg" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Bru 888</p>
+          <p class="text-muted">Rating: 3 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 text-center m-2 product" data-category="SemenMortar" data-rating="3"  data-pdf="assets/Essentials/SemenMortar/Bru889.jpg">
+          <img src="assets/Essentials/SemenMortar/Bru889.jpg" class="img-fluid rounded-image object-fit-cover mx-1 d-block shadow vh-10 w-100"/>
+          <p class="text-uppercase mt-2 mb-0">Bru 889</p>
+          <p class="text-muted">Rating: 3 Bintang</p>
+          <button class="btn btn-primary rounded-pill" onclick="openModal(this)">Learn More</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal for PDF Viewer -->
+  <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="productModalLabel">Product Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <iframe id="pdfViewer" src="" width="100%" class="vh-80"></iframe>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <a id="downloadLink" href="" download class="btn btn-primary">Download</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer id="footer" class="bg-secondary-subtle py-5 text-secondary">
+    <div class="container mx-auto">
+      <!-- Footer Logo -->
+      <div class="row justify-content-between">
+        <div class="col-xl-4 col-12">
+          <div class="text-center">
+            <picture>
+              <source media="(max-width: 767px)" srcset="assets/Logo/WJPLogoFull.png">
+              <source media="(min-width: 768px)" srcset="assets/Logo/WJPLogoVertical.png">
+              <img class="mb-3 footer-logo-img" src="assets/Logo/WJPLogoFull.png" alt="Wiyasa Jaya Perkasa">
+            </picture>
+            <div class="d-flex justify-content-center align-items-center">
+              <i class="fa fa-envelope highlight-color me-2"></i>
+              <a href="mailto:support@wiyasajayaperkasa.com" class="text-decoration-none text-secondary"><span>support@wiyasajayaperkasa.com</span></a>
+            </div>
+            <div class="justify-content-between">
+              <!-- <a href="https://www.instagram.com/wiyasajayaperkasa" class="text-white"><i class="fab fa-instagram me-2 highlight-color"></i></a> -->
+              <!-- <a href="https://www.facebook.com/profile.php?id=61553575571939" target="_blank" class="text-white"><i class="fab fa-facebook-square me-2 highlight-color"></i></a> -->
+              <!-- <a href="https://www.tiktok.com/wiyasajayaperkasa" class="text-white"><i class="fab fa-tiktok me-2 highlight-color"></i></a>
+              <a href="https://www.youtube.com/@wiyasajayaperkasa" class="text-white"><i class="fab fa-youtube me-2 highlight-color"></i></a> -->
+            </div>
+          </div>
+        </div>        
+        <div class="col-xl-2 col-6">
+          <div class="widget">
+            <p class="mb-1 highlight-color fs-5 fw-bold">Company</p>
+            <ul class="menu list-unstyled">
+              <li>
+                <a href="https://www.wiyasajayaperkasa.com" aria-current="page" class="text-decoration-none text-secondary">Home</a>
+              </li>
+              <li>
+                <a href="about.html" class="text-decoration-none text-secondary">About Us</a>
+              </li>
+              <li>
+                <a href="product.html" class="text-decoration-none text-secondary">Product</a>
+              </li>
+              <li>
+                <a href="contact.html" class="text-decoration-none text-secondary">Contact Us</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-xl-6 col-md-6 col-12">
+          <div class="d-flex flex-column align-items-start">
+            <p class="mb-1 highlight-color fs-5 fw-bold">Our Location</p>
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2">
+                <p class="mb-0 fw-bold">Medan</p>
+                <i class="fa fa-map me-2 highlight-color"></i>
+                <a class="mb-1 text-decoration-none text-secondary">Pergudangan BTC, Jl. Kapten Sumarsono No.16, Kp. Lalang, Kec. Sunggal, Medan, Sumatera Utara 20115</a>
+                <div class="d-flex align-items-center">
+                  <i class="fa fa-phone highlight-color me-2"></i>
+                  <a href="tel:+628116386800" class="text-decoration-none text-secondary">
+                    <span>+62 811 6386 800</span>
+                  </a>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mt-5">
+      <div class="container d-flex">
+        <div class="me-auto ms-auto">
+          <span class="pt-copyright">© 2024 Wiyasa Jaya Perkasa. All Rights Reserved.</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <script>
+    function filterProducts() {
+      const searchInput = document.getElementById('searchInput').value.toLowerCase();
+      const products = document.querySelectorAll('.product');
+      products.forEach(product => {
+        const productName = product.querySelector('p').innerText.toLowerCase();
+        if (productName.includes(searchInput)) {
+          product.style.display = 'block';
+        } else {
+          product.style.display = 'none';
+        }
+      });
+    }
+
+    function filterProductsByCategory(category) {
+      const products = document.querySelectorAll('.product');
+      products.forEach(product => {
+        if (category === '' || product.getAttribute('data-category') === category) {
+          product.style.display = 'block';
+        } else {
+          product.style.display = 'none';
+        }
+      });
+    }
+
+    function openModal(button) {
+      const product = button.closest('.product');
+      const pdfSrc = product.getAttribute('data-pdf');
+      const pdfViewer = document.getElementById('pdfViewer');
+      const downloadLink = document.getElementById('downloadLink');
+
+      // Get the parent element of the clicked button (the product container)
+      var productContainer = button.closest('.product');
+      
+      // Get the product name from the <p> element (assuming it's the first one)
+      var productName = productContainer.querySelector('p').innerText;
+      
+      // Set the modal title to the product name
+      document.getElementById('productModalLabel').innerText = productName;
+
+      pdfViewer.src = pdfSrc;
+      downloadLink.href = pdfSrc;
+      const modal = new bootstrap.Modal(document.getElementById('productModal'));
+      modal.show();
+    }
+  </script>
+</body>
+</html>
