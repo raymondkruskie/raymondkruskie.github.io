@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<meta name="description" content="Freedom 2025 in Medan - Ticket Registration">
+	<meta name="author" content="Coach Raymond">
+
+	<title>Freedom 2025 | Photo Booth</title>
+
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/bootstrap-icons.css" rel="stylesheet">
+	<link href="css/templatemo-festava-live.css" rel="stylesheet">
+
+	<style>
+		/* Custom styles for Photo Booth */
+		#photo-booth-section {
+			padding-top: 100px;
+			padding-bottom: 100px;
+			text-align: center;
+		}
+
+		#video-container {
+			position: relative;
+			width: 70%;
+			max-width: 100%;
+			margin: 0 auto 0 auto;
+			aspect-ratio: 16 / 9;
+			border-radius: 25px;
+			overflow: hidden;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+			cursor: pointer; /* Indicate clickability for focus */
+		}
+
+		#video-feed {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+
+		#video-overlay {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			pointer-events: none; /* Allow clicks to pass through */
+			border-radius: 25px;
+			z-index: 2; /* Ensure overlay is above video, below countdown/focus */
+		}
+
+			#video-overlay::before {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: 50%;
+				transform: translateX(-50%);
+				width: 100%;
+				height: 100%;
+				aspect-ratio: 16 / 9;
+				background: transparent;
+				box-sizing: border-box;
+			}
+
+
+		#countdown {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			font-size: 6em;
+			color: white;
+			text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+			z-index: 10; /* Above video and overlay */
+			display: none;
+		}
+
+		#focus-indicator {
+			position: absolute;
+			width: 50px;
+			height: 50px;
+			border: 2px solid yellow;
+			border-radius: 50%; /* Circle shape */
+			pointer-events: none; /* Allow clicks to pass through the indicator itself */
+			z-index: 5; /* Above video, below countdown */
+			opacity: 0; /* Start hidden */
+			transform: translate(-50%, -50%) scale(1.5); /* Start slightly larger */
+			transition: opacity 0.3s ease-out, transform 0.3s ease-out; /* Smooth transition */
+		}
+
+			#focus-indicator.show {
+				opacity: 1; /* Show */
+				transform: translate(-50%, -50%) scale(1); /* Scale down to normal size */
+				animation: pulse 1s infinite alternate; /* Optional pulse animation */
+			}
+
+		@keyframes pulse {
+			0% {
+				border-color: yellow;
+				box-shadow: 0 0 0 0 rgba(255, 255, 0, 0.7);
+			}
+
+			100% {
+				border-color: orange;
+				box-shadow: 0 0 0 10px rgba(255, 255, 0, 0);
+			}
+		}
+
+		#camera-select-container {
+			margin-bottom: 20px;
+		}
+
+		#captured-photos-container {
+			display: flex;
+			justify-content: center;
+			gap: 10px;
+			margin-bottom: 20px;
+			flex-wrap: wrap; /* Allow wrapping on smaller screens */
+		}
+
+		.captured-photo {
+			margin-top: 30px;
+			width: 100px; /* Fixed width for displayed thumbnails */
+			height: auto;
+			border: 0;
+			border-radius: 15px; /* Slightly smaller radius for thumbnails */
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		}
+
+		#final-photo-container {
+			margin-top: 30px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			max-width: 500px;
+			margin: 30px auto 0 auto;
+		}
+
+		#final-photo {
+			max-width: 100%;
+			height: auto;
+			border: 0;
+			border-radius: 25px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+			display: none;
+		}
+
+		#capture-button,
+		#download-button {
+			margin-top: 20px;
+		}
+
+		#canvas {
+			display: none;
+		}
+
+		#temp-canvas {
+			display: none;
+		}
+	</style>
+</head>
+
+<body>
+
+	<main>
+		<nav class="navbar navbar-expand-lg">
+			<div class="container">
+				<a class="navbar-brand" href="index.html">
+					<img src="images/KKRFREEDOMCoachRaymond.png" alt="KKR Freedom Logo"
+							 style="max-width: 80px; height: auto;">
+				</a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+								aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarNav">
+					<ul class="navbar-nav align-items-lg-center ms-auto me-lg-5">
+						<li class="nav-item"><a class="nav-link click-scroll" href="index.html#section_1">Home</a></li>
+						<li class="nav-item"><a class="nav-link click-scroll" href="index.html#section_2">About</a></li>
+						<li class="nav-item">
+							<a class="nav-link click-scroll" href="index.html#section_3">Activity</a>
+						</li>
+						<li class="nav-item"><a class="nav-link click-scroll" href="index.html#section_4">Contact</a></li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+
+		<section id="photo-booth-section">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12 col-12">
+						<h2 class="text-white">Photo Booth Fun</h2>
+						<p>Get ready to capture some memories!</p>
+
+						<div id="camera-select-container">
+							<select id="camera-select" class="form-select d-inline-block w-auto bg-dark text-white rounded-pill border-0">
+							</select>
+						</div>
+
+						<div id="video-container">
+							<video id="video-feed" autoplay playsinline></video>
+							<div id="video-overlay"></div> <div id="countdown"></div>
+							<div id="focus-indicator"></div>
+						</div>
+
+						<button id="capture-button" class="btn btn-primary btn-lg" disabled>Start Photo Session</button>
+						<div id="captured-photos-container">
+						</div>
+
+						<canvas id="canvas"></canvas>
+						<canvas id="temp-canvas"></canvas>
+						<div id="final-photo-container">
+							<img id="final-photo" alt="Combined Photo">
+						</div>
+
+						<button id="download-button" class="btn btn-success btn-lg" style="display: none;">
+							Download
+							Photo
+						</button>
+
+					</div>
+				</div>
+			</div>
+		</section>
+
+	</main>
+
+	<footer class="site-footer">
+		<div class="container">
+			<div class="row align-items-center">
+				<div class="col-lg-6 col-md-7 col-12 mb-0 text-center text-md-start">
+					<p class="copyright-text my-2"> Copyright © 2025 Freedom. All rights reserved.</p>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+	<script src="js/jquery.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/jquery.sticky.js"></script>
+	<script src="js/click-scroll.js"></script>
+	<script src="js/custom.js"></script>
+
+	<script>
+		const videoFeed = document.getElementById('video-feed');
+		const videoContainer = document.getElementById('video-container'); // Added container reference
+		const captureButton = document.getElementById('capture-button');
+		const countdownElement = document.getElementById('countdown');
+		const focusIndicator = document.getElementById('focus-indicator'); // Added focus indicator reference
+		const cameraSelect = document.getElementById('camera-select'); // Added camera select reference
+
+		const canvas = document.getElementById('canvas'); // Main canvas for final image
+		const context = canvas.getContext('2d');
+		const tempCanvas = document.getElementById('temp-canvas'); // Temporary canvas for combining
+		const tempContext = tempCanvas.getContext('2d');
+		const capturedPhotosContainer = document.getElementById('captured-photos-container');
+		const finalPhoto = document.getElementById('final-photo');
+		const downloadButton = document.getElementById('download-button');
+
+		let stream = null;
+		let capturedImages = [];
+		let isCapturing = false; // State variable to prevent interaction during capture
+
+		const sourceAspectRatio = 16 / 9; // We will attempt to capture from a 16:9 area of the video feed
+		const individualCaptureAspectRatio = 9 / 8; // Each captured photo needs this ratio to stack into 9:16
+		// The final output will effectively be 9:16 after combining two 9:8 images
+
+		// Set a target resolution for the individual captured photos (9:8 ratio)
+		const individualCaptureWidth = 450; // Example width for the 9:8 capture
+		const individualCaptureHeight = individualCaptureWidth / individualCaptureAspectRatio;
+
+		// The final canvas dimensions will be based on stacking two individual captures
+		const finalCanvasWidth = individualCaptureWidth;
+		const finalCanvasHeight = individualCaptureHeight * 2; // 9:16 aspect ratio (450x800)
+
+		const rotationDegrees = 0; // Rotation angle in degrees
+
+		// *** IMPORTANT: Set the path to your PNG overlay image here ***
+		const overlayImagePath = 'images/PhotoBooth/FreedomCoachRaymondFrame.png'; // <--- REPLACE WITH YOUR PNG PATH
+		// **************************************************************
+
+		const overlayImage = new Image();
+		overlayImage.crossOrigin = 'anonymous'; // Needed if loading from a different domain
+		overlayImage.src = overlayImagePath;
+
+		// Function to check if camera, overlay, and initial camera list are loaded
+		function checkReadyState() {
+			// Check if video feed is ready, overlay image is loaded,
+			// and the camera select has options (meaning devices were enumerated)
+			if (videoFeed.readyState >= 3 && overlayImage.complete && overlayImage.naturalHeight !== 0 && cameraSelect.options.length > 0) {
+				captureButton.disabled = false; // Enable button once all are ready
+				console.log("Camera, overlay, and camera list loaded. Button enabled.");
+			} else {
+				console.log("Waiting for components...", {
+					videoReady: videoFeed.readyState,
+					overlayComplete: overlayImage.complete,
+					overlayHeight: overlayImage.naturalHeight,
+					cameraOptions: cameraSelect.options.length
+				});
+				captureButton.disabled = true; // Keep disabled if not ready
+			}
+		}
+
+		// Function to enumerate cameras and populate the select dropdown
+		async function enumerateAndPopulateCameras() {
+			try {
+				// Ensure permissions are granted first to get device labels
+				// We can request a dummy stream and immediately stop it if needed,
+				// or rely on the main startCamera call granting permission.
+				// The checkReadyState function will wait for options to appear.
+
+				const devices = await navigator.mediaDevices.enumerateDevices();
+				const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+				cameraSelect.innerHTML = ''; // Clear existing options
+
+				if (videoDevices.length === 0) {
+					const option = document.createElement('option');
+					option.value = '';
+					option.text = 'No cameras found';
+					cameraSelect.appendChild(option);
+					cameraSelect.disabled = true;
+				} else {
+					videoDevices.forEach((device, index) => {
+						const option = document.createElement('option');
+						option.value = device.deviceId;
+						// Use device label if available, otherwise a generic name
+						option.text = device.label || `Camera ${index + 1}`;
+						cameraSelect.appendChild(option);
+					});
+					cameraSelect.disabled = false;
+
+					// Set the select value to the currently active camera's deviceId
+					// if a stream is already running
+					if (stream) {
+						const currentTrack = stream.getVideoTracks()[0];
+						if (currentTrack) {
+							const currentDeviceId = currentTrack.getSettings().deviceId;
+							if (currentDeviceId) {
+								cameraSelect.value = currentDeviceId;
+							}
+						}
+					} else {
+						// If no stream yet, try to select the user-facing camera by default
+						const userFacingCamera = videoDevices.find(device =>
+							device.label.toLowerCase().includes('front') ||
+							device.label === '' // Often default camera has no label initially
+						);
+						if (userFacingCamera) {
+							cameraSelect.value = userFacingCamera.deviceId;
+						} else if (videoDevices.length > 0) {
+							// Fallback to the first camera if no user-facing found
+							cameraSelect.value = videoDevices[0].deviceId;
+						}
+					}
+
+				}
+				checkReadyState(); // Check ready state after populating
+			} catch (err) {
+				console.error("Error enumerating devices: ", err);
+				alert("Could not list cameras.");
+				cameraSelect.innerHTML = '<option value="">Error listing cameras</option>';
+				cameraSelect.disabled = true;
+				checkReadyState(); // Check ready state on error
+			}
+		}
+
+
+		// Function to start camera feed with specific constraints (or default)
+		async function startCamera(constraints = { video: { facingMode: 'user', aspectRatio: { ideal: sourceAspectRatio } } }) {
+			stopCamera(); // Stop any existing stream
+
+			try {
+				stream = await navigator.mediaDevices.getUserMedia(constraints);
+				videoFeed.srcObject = stream;
+
+				videoFeed.onloadedmetadata = () => {
+					console.log("Video metadata loaded.");
+					// Wait for video to actually be able to play
+				};
+
+				videoFeed.oncanplaythrough = () => {
+					console.log("Video can play through. Playing.");
+					videoFeed.play();
+					checkReadyState(); // Check readiness when video is ready
+					// Also enumerate cameras here, in case permissions were just granted
+					enumerateAndPopulateCameras();
+				};
+
+				videoFeed.onerror = (e) => {
+					console.error("Error playing video feed: ", e);
+					alert("Error accessing camera feed. Please ensure permissions are granted and no other app is using the camera.");
+					captureButton.disabled = true; // Disable on video error
+					// Attempt to re-enumerate cameras in case error was permission-related
+					enumerateAndPopulateCameras();
+				}
+
+			} catch (err) {
+				console.error("Error accessing camera: ", err);
+				if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+					alert("Camera access denied. Please allow camera permissions in your browser settings.");
+				} else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+					alert("No camera found. Please ensure a camera is connected.");
+				}
+				else {
+					alert(`Could not access camera: ${err.message}`);
+				}
+				captureButton.disabled = true; // Keep button disabled on error
+				// Even on error, try to enumerate cameras to show "No cameras found" or list others
+				enumerateAndPopulateCameras();
+			}
+		}
+
+		// Function to stop camera feed
+		function stopCamera() {
+			if (stream) {
+				console.log("Stopping current stream...");
+				stream.getTracks().forEach(track => track.stop());
+				videoFeed.srcObject = null;
+				stream = null; // Clear the stream variable
+			}
+		}
+
+		// Function to switch camera based on deviceId
+		function switchCamera(deviceId) {
+			if (!deviceId) {
+				console.warn("No deviceId provided for switching camera.");
+				return;
+			}
+			console.log("Switching to camera:", deviceId);
+			const constraints = {
+				video: {
+					deviceId: { exact: deviceId },
+					aspectRatio: { ideal: sourceAspectRatio }
+				}
+			};
+			startCamera(constraints); // Start camera with the selected device
+		}
+
+
+		// Function to capture a frame: extracts a 9:8 segment from a central 16:9 area of the video feed
+		function captureFrame() {
+			const videoWidth = videoFeed.videoWidth;
+			const videoHeight = videoFeed.videoHeight;
+
+			// Calculate the largest 16:9 area that fits within the video feed dimensions
+			let sourceWidth_16_9, sourceHeight_16_9;
+			let sourceX_video_16_9, sourceY_video_16_9; // Top-left corner of the 16:9 area on the video
+
+			const videoAspectRatio = videoWidth / videoHeight;
+
+			if (videoAspectRatio > sourceAspectRatio) {
+				// Video is wider than 16:9, crop video sides to get the widest possible 16:9 source
+				sourceHeight_16_9 = videoHeight;
+				sourceWidth_16_9 = videoHeight * sourceAspectRatio;
+				sourceX_video_16_9 = (videoWidth - sourceWidth_16_9) / 2;
+				sourceY_video_16_9 = 0;
+			} else {
+				// Video is taller or equal to 16:9, crop video top/bottom to get the tallest possible 16:9 source
+				sourceWidth_16_9 = videoWidth;
+				sourceHeight_16_9 = videoWidth / sourceAspectRatio;
+				sourceX_video_16_9 = 0;
+				sourceY_video_16_9 = (videoHeight - sourceHeight_16_9) / 2;
+			}
+
+			// Dimensions of the 9:8 segment needed from the 16:9 source area
+			const segmentHeight_source = sourceHeight_16_9;
+			const segmentWidth_source = segmentHeight_source * individualCaptureAspectRatio;
+
+			// Coordinates to crop the 9:8 segment from the 16:9 source area
+			const segmentX_source = sourceX_video_16_9 + (sourceWidth_16_9 - segmentWidth_source) / 2;
+			const segmentY_source = sourceY_video_16_9;
+
+			// Set canvas dimensions to the desired 9:8 output size for the captured image
+			canvas.width = individualCaptureWidth;
+			canvas.height = individualCaptureHeight;
+
+			// Draw the cropped 9:8 segment from the 16:9 source area onto the 9:8 canvas.
+			context.drawImage(
+				videoFeed, // Source image
+				segmentX_source, segmentY_source, segmentWidth_source, segmentHeight_source, // Source rectangle
+				0, 0, canvas.width, canvas.height // Destination rectangle
+			);
+
+			// Get the image data URL from the 9:8 canvas
+			const dataUrl = canvas.toDataURL('image/png');
+			return dataUrl;
+		}
+
+		// Function to run the countdown and take a picture
+		function runCountdownAndCapture() {
+			isCapturing = true; // Set capturing state
+			let count = 3;
+			countdownElement.style.display = 'block';
+			countdownElement.textContent = count;
+			captureButton.disabled = true; // Ensure button is disabled during countdown
+			videoContainer.style.cursor = 'default'; // Change cursor during capture
+
+			const timer = setInterval(() => {
+				count--;
+				if (count > 0) {
+					countdownElement.textContent = count;
+				} else if (count === 0) {
+					countdownElement.textContent = 'SNAP!';
+				} else {
+					// Count is less than 0, time to capture
+					clearInterval(timer);
+					countdownElement.style.display = 'none';
+
+					const dataUrl = captureFrame(); // Capture the 9:8 frame
+					capturedImages.push(dataUrl);
+					displayCapturedPhoto(dataUrl); // Display the captured 9:8 frame
+
+					if (capturedImages.length < 2) { // Changed from < 3 to < 2 for two photos
+						// Take the second photo after a brief pause
+						setTimeout(runCountdownAndCapture, 1000);
+					} else {
+						// Combine photos and finish
+						combinePhotos();
+						isCapturing = false; // Reset capturing state
+						videoContainer.style.cursor = 'pointer'; // Restore cursor
+					}
+				}
+			}, 1000);
+		}
+
+		// Function to display individual captured photos
+		function displayCapturedPhoto(dataUrl) {
+			const img = document.createElement('img');
+			img.src = dataUrl;
+			img.classList.add('captured-photo');
+			// Optional: Add a class to indicate which photo it is (e.g., 'photo-1', 'photo-2')
+			img.classList.add(`photo-${capturedImages.length}`);
+			capturedPhotosContainer.appendChild(img);
+		}
+
+		// Function to combine the two 9:8 photos, rotate the collage, and add the overlay
+		function combinePhotos() {
+			if (capturedImages.length === 2) {
+				const img1 = new Image();
+				const img2 = new Image();
+
+				// Use a Promise to wait for both 9:8 images to load
+				Promise.all([
+					new Promise((resolve, reject) => {
+						img1.onload = () => resolve();
+						img1.onerror = reject;
+						img1.src = capturedImages[0];
+					}),
+					new Promise((resolve, reject) => {
+						img2.onload = () => resolve();
+						img2.onerror = reject;
+						img2.src = capturedImages[1];
+					})
+				])
+					.then(() => {
+						// The temporary canvas size for combining the two 9:8 images vertically (9:16 ratio)
+						tempCanvas.width = individualCaptureWidth;
+						tempCanvas.height = individualCaptureHeight * 2;
+
+						// Draw the first 9:8 image at the top onto the temporary canvas
+						tempContext.drawImage(img1, 0, 0);
+						// Draw the second 9:8 image below the first onto the temporary canvas
+						tempContext.drawImage(img2, 0, img1.height);
+
+						// Set the main canvas dimensions for the final 9:16 output
+						canvas.width = finalCanvasWidth; // 450
+						canvas.height = finalCanvasHeight; // 800
+
+						// Clear the main canvas
+						context.clearRect(0, 0, canvas.width, canvas.height);
+
+						// *** Rotate the combined image on the main canvas ***
+						context.save(); // Save current context state
+
+						// Translate origin to the center of the main canvas
+						context.translate(canvas.width / 2, canvas.height / 2);
+
+						// Rotate by the specified degrees (convert to radians)
+						context.rotate(rotationDegrees * Math.PI / 180);
+
+						// Draw the temporary canvas content (the combined 9:16 image) onto the main canvas,
+						// centered after rotation
+						context.drawImage(tempCanvas, -tempCanvas.width / 2, -tempCanvas.height / 2);
+
+						context.restore(); // Restore context to remove rotation/translation
+
+						// ****************************************************
+
+						// *** Draw the overlay image on top (unrotated) ***
+						if (overlayImage.complete && overlayImage.naturalHeight !== 0) {
+							// Draw overlay scaled to cover the entire main canvas (450x800)
+							context.drawImage(overlayImage, 0, 0, canvas.width, canvas.height);
+						} else {
+							console.error("Overlay image not loaded or invalid. Proceeding without overlay.");
+							// alert("Warning: Overlay image could not be loaded."); // Avoid multiple alerts
+						}
+						// ************************************************
+
+
+						// Display the final combined and rotated image
+						finalPhoto.src = canvas.toDataURL('image/png');
+						finalPhoto.style.display = 'block';
+						downloadButton.style.display = 'inline-block';
+
+						// Clean up individual displayed photos
+						capturedPhotosContainer.innerHTML = '';
+
+						// Reset for next session
+						capturedImages = [];
+						captureButton.textContent = 'Start Photo Session';
+						checkReadyState(); // Re-enable button after everything is done if ready
+					})
+					.catch(error => {
+						console.error("Error loading captured images for combining: ", error);
+						alert("Error processing photos. Please try again.");
+						// Reset state on error
+						capturedImages = [];
+						capturedPhotosContainer.innerHTML = '';
+						captureButton.textContent = 'Start Photo Session';
+						isCapturing = false; // Reset capturing state
+						videoContainer.style.cursor = 'pointer'; // Restore cursor
+						checkReadyState(); // Re-enable button on error if ready
+					});
+			}
+		}
+
+		// --- Event Listeners ---
+
+		// Event listener for the capture button
+		captureButton.addEventListener('click', () => {
+			// Only start the sequence if not already in progress and button is enabled
+			if (!isCapturing && !captureButton.disabled) {
+				captureButton.textContent = 'Get Ready...';
+				captureButton.disabled = true; // Disable button immediately on click
+				// Clear previous results
+				finalPhoto.style.display = 'none';
+				downloadButton.style.display = 'none';
+				capturedPhotosContainer.innerHTML = '';
+
+				runCountdownAndCapture();
+			}
+		});
+
+		// Event listener for the download button
+		downloadButton.addEventListener('click', () => {
+			const link = document.createElement('a');
+			link.download = 'photobooth_freedom2025.png';
+			link.href = finalPhoto.src;
+			link.click();
+		});
+
+		// Event listener for camera selection change
+		cameraSelect.addEventListener('change', (event) => {
+			const selectedDeviceId = event.target.value;
+			if (selectedDeviceId) {
+				switchCamera(selectedDeviceId);
+			}
+		});
+
+		// Event listener for clicking the video container (simulated tap-to-focus)
+		videoContainer.addEventListener('click', (event) => {
+			// Only show indicator if not currently capturing
+			if (!isCapturing) {
+				const videoRect = videoContainer.getBoundingClientRect();
+				const offsetX = event.clientX - videoRect.left;
+				const offsetY = event.clientY - videoRect.top;
+
+				// Position the focus indicator
+				focusIndicator.style.left = `${offsetX}px`;
+				focusIndicator.style.top = `${offsetY}px`;
+
+				// Show the indicator
+				focusIndicator.classList.add('show');
+
+				// Hide the indicator after a short time
+				setTimeout(() => {
+					focusIndicator.classList.remove('show');
+				}, 500); // Indicator stays visible for 500ms
+
+				// In a real application, you might try to apply
+				// MediaTrackConstraints here like focusMode, exposureMode, etc.
+				// However, support is inconsistent across browsers/devices.
+				// For this example, it's just a visual indicator.
+				// console.log(`Tapped at: (${offsetX}, ${offsetY}) relative to video container`);
+			}
+		});
+
+
+		// --- Initialization ---
+
+		// Check ready state when overlay image loads
+		overlayImage.onload = checkReadyState;
+		overlayImage.onerror = () => {
+			console.error("Error loading overlay image. Please check the path: " + overlayImagePath);
+			// No alert here, let checkReadyState handle button state
+			checkReadyState();
+		};
+
+
+		// Start the camera when the page loads
+		// This initial call will request permission and trigger enumeration
+		startCamera();
+
+
+		// Optional: Stop camera when the page is closed or navigated away
+		window.addEventListener('beforeunload', stopCamera);
+
+		// Add a listener for page visibility to stop/start camera
+		document.addEventListener('visibilitychange', () => {
+			if (document.visibilityState === 'hidden') {
+				stopCamera();
+			} else {
+				// When returning to the page, restart the camera with the selected device
+				const selectedDeviceId = cameraSelect.value;
+				if (selectedDeviceId) {
+					switchCamera(selectedDeviceId);
+				} else {
+					// If no device selected (e.g., initial load), start with default
+					startCamera();
+				}
+			}
+		});
+
+	</script>
+
+</body>
+
+</html>
