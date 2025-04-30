@@ -19,22 +19,80 @@
 
 	<style>
 		/* Custom styles for Photo Booth */
+		body {
+			background-color: #000; /* Set body background to black */
+			color: white; /* Set default text color to white */
+		}
+
 		#photo-booth-section {
 			padding-top: 100px;
 			padding-bottom: 100px;
 			text-align: center;
+			background: #000; /* Ensure section background is black */
+			color: white; /* Ensure section text color is white */
+			display: flex; /* Use flexbox for main layout */
+			flex-direction: column; /* Stack elements vertically */
+			align-items: center; /* Center content horizontally */
 		}
+
+			/* Ensure headings and paragraphs are white */
+			#photo-booth-section h2,
+			#photo-booth-section p {
+				color: white;
+			}
+
+
+		/* Container for camera select */
+		#camera-select-container-outside {
+			margin-bottom: 20px; /* Space below the select dropdown */
+			min-height: 38px; /* Ensure consistent height */
+		}
+
+		#camera-select-outside {
+			/* Style the select itself */
+			background-color: rgba(255, 255, 255, 0.2);
+			color: white;
+			border: none;
+			border-radius: 20px;
+			padding: 0.375rem 2.25rem 0.375rem 0.75rem; /* Default select padding */
+			-webkit-appearance: none; /* Remove default dropdown arrow */
+			-moz-appearance: none;
+			appearance: none;
+			background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3csvg%3e"); /* Custom white arrow */
+			background-repeat: no-repeat;
+			background-position: right 0.75rem center;
+			background-size: 16px 12px;
+			cursor: pointer;
+		}
+
+			#camera-select-outside option {
+				background-color: #333; /* Dark background for options */
+				color: white;
+			}
+
+
+		/* Container for video and controls */
+		#camera-area {
+			display: flex; /* Arrange video and controls side-by-side by default */
+			align-items: flex-start; /* Align items to the top */
+			justify-content: center; /* Center the camera area */
+			width: 95%; /* Use more width for landscape layout */
+			max-width: 1200px; /* Max width for the camera area */
+			/* Removed margin-bottom as it's now above */
+		}
+
 
 		#video-container {
 			position: relative;
-			width: 70%;
-			max-width: 100%;
-			margin: 0 auto 0 auto;
-			aspect-ratio: 16 / 9;
+			flex-grow: 1; /* Allow video to take available space */
+			aspect-ratio: 16 / 9; /* Maintain aspect ratio */
 			border-radius: 25px;
 			overflow: hidden;
-			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+			box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); /* Stronger shadow for depth */
 			cursor: pointer; /* Indicate clickability for focus */
+			background-color: #000; /* Black background if video is not ready */
+			margin-right: 20px; /* Space between video and controls on large screens */
+			max-height: calc(100vh - 300px); /* Limit video height to prevent overflow on large screens */
 		}
 
 		#video-feed {
@@ -44,7 +102,15 @@
 			width: 100%;
 			height: 100%;
 			object-fit: cover;
+			transform: scaleX(-1); /* Mirror the feed */
+			transition: opacity 0.5s ease-in-out;
+			opacity: 0; /* Start hidden until can play */
 		}
+
+			#video-feed.ready {
+				opacity: 1; /* Fade in when ready */
+			}
+
 
 		#video-overlay {
 			position: absolute;
@@ -57,18 +123,48 @@
 			z-index: 2; /* Ensure overlay is above video, below countdown/focus */
 		}
 
-			#video-overlay::before {
+		/* 3x3 Grid Overlay */
+		#grid-overlay {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			grid-template-rows: repeat(3, 1fr);
+			border: 1px solid rgba(255, 255, 255, 0.3); /* Subtle outer border */
+			pointer-events: none; /* Allow clicks to pass through */
+			z-index: 3; /* Above video overlay, below countdown/focus */
+		}
+
+			#grid-overlay::before {
 				content: '';
 				position: absolute;
 				top: 0;
-				left: 50%;
-				transform: translateX(-50%);
-				width: 100%;
+				left: 33.33%;
+				width: 1px;
 				height: 100%;
-				aspect-ratio: 16 / 9;
-				background: transparent;
-				box-sizing: border-box;
+				background-color: rgba(255, 255, 255, 0.2); /* Vertical grid line */
 			}
+
+			#grid-overlay::after {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: 66.66%;
+				width: 1px;
+				height: 100%;
+				background-color: rgba(255, 255, 255, 0.2); /* Vertical grid line */
+			}
+
+			#grid-overlay > :nth-child(1) {
+				grid-column: 1 / span 3;
+				grid-row: 2 / span 1;
+				border-top: 1px solid rgba(255, 255, 255, 0.2); /* Horizontal grid line */
+				border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Horizontal grid line */
+			}
+		/* The other horizontal line is covered by the first child span */
 
 
 		#countdown {
@@ -78,9 +174,10 @@
 			transform: translate(-50%, -50%);
 			font-size: 6em;
 			color: white;
-			text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+			text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
 			z-index: 10; /* Above video and overlay */
 			display: none;
+			font-weight: bold;
 		}
 
 		#focus-indicator {
@@ -99,7 +196,7 @@
 			#focus-indicator.show {
 				opacity: 1; /* Show */
 				transform: translate(-50%, -50%) scale(1); /* Scale down to normal size */
-				animation: pulse 1s infinite alternate; /* Optional pulse animation */
+				animation: pulse 1s 2 alternate; /* Pulse animation 2 times */
 			}
 
 		@keyframes pulse {
@@ -114,25 +211,334 @@
 			}
 		}
 
-		#camera-select-container {
-			margin-bottom: 20px;
+		/* --- Camera Controls Styling (Right Side) --- */
+		#camera-controls-container {
+			flex-shrink: 0; /* Prevent controls from shrinking */
+			width: 200px; /* Fixed width for the controls bar on large screens */
+			padding: 15px 10px; /* Adjust padding */
+			border-radius: 25px; /* Match video container radius */
+			background-color: rgba(255, 255, 255, 0.15); /* Transparent white */
+			backdrop-filter: blur(15px); /* Frosted glass effect */
+			-webkit-backdrop-filter: blur(15px); /* For Safari */
+			border: 1px solid rgba(255, 255, 255, 0.18); /* Subtle border */
+			box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); /* Glassy shadow */
+			display: flex;
+			flex-direction: column; /* Stack controls vertically */
+			align-items: center; /* Center controls horizontally within the bar */
+			overflow-y: auto; /* Allow scrolling if controls exceed height */
+			max-height: calc(100vh - 300px); /* Limit height to prevent overflow on large screens */
 		}
+
+		.controls-top-bar {
+			/* This bar is now empty, hide it or keep for structure */
+			display: none; /* Hide the empty top bar */
+		}
+
+		.controls-main-bar {
+			width: 100%;
+			display: flex;
+			flex-direction: column; /* Stack main buttons vertically */
+			align-items: center;
+			gap: 15px; /* Space between main buttons */
+			margin-bottom: 20px; /* Space below main buttons */
+		}
+
+		.controls-left,
+		.controls-right {
+			/* These are less relevant in the vertical layout */
+			display: flex;
+			flex-direction: column; /* Stack items vertically */
+			align-items: center;
+			gap: 10px;
+			width: 100%; /* Take full width */
+		}
+
+		.controls-left {
+			order: 1; /* Place reset button at the top */
+		}
+
+		.controls-right {
+			order: 3; /* Place other buttons below shutter */
+		}
+
+		.controls-center {
+			order: 2; /* Place shutter button in the middle */
+			width: 100%; /* Take full width */
+			display: flex;
+			justify-content: center;
+		}
+
+
+		/* Style for control buttons */
+		.control-button {
+			background-color: rgba(255, 255, 255, 0.2);
+			border: none;
+			border-radius: 50%;
+			width: 45px;
+			height: 45px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			transition: background-color 0.3s ease;
+			color: white;
+			font-size: 1.3em;
+			flex-shrink: 0;
+		}
+
+			.control-button:hover:not(:disabled) {
+				background-color: rgba(255, 255, 255, 0.4);
+			}
+
+			.control-button:active:not(:disabled) {
+				background-color: rgba(255, 255, 255, 0.6);
+			}
+
+			.control-button:disabled {
+				opacity: 0.4;
+				cursor: not-allowed;
+			}
+
+		/* Style for the shutter button */
+		#capture-button.shutter-button {
+			background-color: white;
+			border: 6px solid rgba(0, 0, 0, 0.2);
+			border-radius: 50%;
+			width: 70px;
+			height: 70px;
+			display: block;
+			margin: 0 auto;
+			position: relative;
+			cursor: pointer;
+			transition: transform 0.1s ease-in-out;
+			flex-shrink: 0;
+		}
+
+			#capture-button.shutter-button:hover:not(:disabled) {
+				transform: scale(1.05);
+			}
+
+			#capture-button.shutter-button:active:not(:disabled) {
+				transform: scale(0.95);
+			}
+
+			#capture-button.shutter-button::before {
+				content: '';
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				width: 50px;
+				height: 50px;
+				background-color: red;
+				border-radius: 50%;
+			}
+
+			#capture-button.shutter-button:disabled::before {
+				background-color: grey;
+			}
+
+		/* Hide the default capture button text */
+		#capture-button {
+			font-size: 0;
+			line-height: 0;
+			white-space: nowrap;
+		}
+
+		/* Style for zoom controls */
+		#zoom-controls {
+			display: flex;
+			flex-direction: column; /* Stack zoom buttons and slider vertically */
+			align-items: center;
+			gap: 10px; /* Space between zoom elements */
+			background-color: rgba(0, 0, 0, 0.3);
+			padding: 10px 5px; /* Adjust padding */
+			border-radius: 20px;
+			flex-shrink: 0; /* Prevent shrinking */
+			width: 100%; /* Take full width of parent (controls-right) */
+		}
+
+		.zoom-slider {
+			width: 5px; /* Make slider vertical */
+			height: 100px; /* Fixed height for vertical slider */
+			-webkit-appearance: none;
+			appearance: none;
+			background: rgba(255, 255, 255, 0.5);
+			outline: none;
+			opacity: 0.8;
+			transition: opacity 0.2s;
+			transform: rotate(90deg); /* Rotate slider */
+			margin: 20px 0; /* Adjust margin for rotation */
+		}
+
+			.zoom-slider:hover {
+				opacity: 1;
+			}
+
+			.zoom-slider::-webkit-slider-thumb {
+				-webkit-appearance: none;
+				appearance: none;
+				width: 18px;
+				height: 18px;
+				background: white;
+				border-radius: 50%;
+				cursor: pointer;
+				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+			}
+
+			.zoom-slider::-moz-range-thumb {
+				width: 18px;
+				height: 18px;
+				background: white;
+				border-radius: 50%;
+				cursor: pointer;
+				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+			}
+
+		/* Style for zoom buttons */
+		.zoom-button {
+			width: 35px;
+			height: 35px;
+			font-size: 1em;
+		}
+
+		/* --- Advanced Controls Styling (Vertical) --- */
+		.advanced-controls-bar {
+			width: 100%;
+			display: flex;
+			flex-direction: column; /* Stack controls vertically */
+			align-items: center;
+			gap: 15px; /* Space between control groups */
+			margin-top: 15px;
+		}
+
+		.control-group {
+			display: flex;
+			flex-direction: column; /* Stack label, slider, input */
+			align-items: center;
+			gap: 5px;
+			width: 100%; /* Take full width of parent */
+			padding: 0 5px; /* Add horizontal padding */
+		}
+
+			.control-group label {
+				font-size: 0.8em; /* Smaller font for labels */
+				color: rgba(255, 255, 255, 0.8);
+				text-transform: uppercase;
+				letter-spacing: 1px;
+				white-space: nowrap;
+				text-align: center; /* Center label text */
+			}
+
+		.slider-input-container {
+			display: flex;
+			flex-direction: column; /* Stack slider and input vertically */
+			align-items: center;
+			gap: 5px; /* Space between slider and input */
+			width: 100%; /* Container takes full group width */
+		}
+
+		.control-group input[type="range"] {
+			width: 100%; /* Slider takes full width of container */
+			-webkit-appearance: none;
+			appearance: none;
+			height: 5px;
+			background: rgba(255, 255, 255, 0.3);
+			outline: none;
+			opacity: 0.8;
+			transition: opacity 0.2s;
+			border-radius: 2.5px;
+		}
+
+			.control-group input[type="range"]:hover {
+				opacity: 1;
+			}
+
+			.control-group input[type="range"]::-webkit-slider-thumb {
+				-webkit-appearance: none;
+				appearance: none;
+				width: 18px;
+				height: 18px;
+				background: white;
+				border-radius: 50%;
+				cursor: pointer;
+				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+				margin-top: -6.5px;
+			}
+
+			.control-group input[type="range"]::-moz-range-thumb {
+				width: 18px;
+				height: 18px;
+				background: white;
+				border-radius: 50%;
+				cursor: pointer;
+				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+			}
+
+		.control-group input[type="number"] {
+			width: 80px; /* Increased width for number input */
+			padding: 5px;
+			border: none;
+			border-radius: 5px;
+			background-color: rgba(0, 0, 0, 0.3);
+			color: white;
+			font-size: 0.9em;
+			text-align: center;
+			-moz-appearance: textfield;
+		}
+
+			.control-group input[type="number"]::-webkit-outer-spin-button,
+			.control-group input[type="number"]::-webkit-inner-spin-button {
+				-webkit-appearance: none;
+				margin: 0;
+			}
+
+		/* Style for auto-focus button */
+		#auto-focus-button {
+			margin-top: 10px;
+			background-color: rgba(255, 255, 255, 0.2);
+			border: none;
+			border-radius: 20px;
+			padding: 5px 15px;
+			color: white;
+			font-size: 0.9em;
+			cursor: pointer;
+			transition: background-color 0.3s ease;
+			display: none;
+		}
+
+			#auto-focus-button:hover:not(:disabled) {
+				background-color: rgba(255, 255, 255, 0.4);
+			}
+
+			#auto-focus-button:active:not(:disabled) {
+				background-color: rgba(255, 255, 255, 0.6);
+			}
+
+			#auto-focus-button:disabled {
+				opacity: 0.4;
+				cursor: not-allowed;
+			}
+
+
+		/* --- End Camera Controls Styling --- */
+
 
 		#captured-photos-container {
 			display: flex;
 			justify-content: center;
 			gap: 10px;
+			margin-top: 30px;
 			margin-bottom: 20px;
-			flex-wrap: wrap; /* Allow wrapping on smaller screens */
+			flex-wrap: wrap;
 		}
 
 		.captured-photo {
-			margin-top: 30px;
-			width: 100px; /* Fixed width for displayed thumbnails */
+			width: 80px;
 			height: auto;
-			border: 0;
-			border-radius: 15px; /* Slightly smaller radius for thumbnails */
-			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			border: 3px solid rgba(255, 255, 255, 0.5);
+			border-radius: 10px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 		}
 
 		#final-photo-container {
@@ -153,9 +559,10 @@
 			display: none;
 		}
 
-		#capture-button,
-		#download-button {
+		#download-button, #whatsapp-button {
 			margin-top: 20px;
+			margin-left: 10px; /* Space between buttons */
+			margin-right: 10px; /* Space between buttons */
 		}
 
 		#canvas {
@@ -164,6 +571,167 @@
 
 		#temp-canvas {
 			display: none;
+		}
+
+		/* Modal Styles */
+		.modal-content {
+			background-color: #1a1a1a; /* Dark background for modal */
+			color: white; /* White text for modal */
+			border-radius: 15px;
+		}
+
+		.modal-header {
+			border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
+		}
+
+		.modal-footer {
+			border-top: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
+		}
+
+		.modal-title {
+			color: white;
+		}
+
+		.modal .form-label {
+			color: white;
+		}
+
+		.modal .form-control {
+			background-color: rgba(255, 255, 255, 0.1);
+			color: white;
+			border: 1px solid rgba(255, 255, 255, 0.2);
+		}
+
+			.modal .form-control:focus {
+				background-color: rgba(255, 255, 255, 0.2);
+				border-color: rgba(255, 255, 255, 0.4);
+				color: white;
+				box-shadow: none;
+			}
+
+		.modal .btn-secondary {
+			background-color: #555;
+			border-color: #555;
+			color: white;
+		}
+
+			.modal .btn-secondary:hover {
+				background-color: #666;
+				border-color: #666;
+			}
+
+		.modal .btn-success {
+			background-color: #28a745;
+			border-color: #28a745;
+		}
+
+			.modal .btn-success:hover {
+				background-color: #218838;
+				border-color: #1e7e34;
+			}
+
+
+		/* --- Responsive Styles --- */
+		@media (max-width: 768px) {
+			#camera-area {
+				flex-direction: column; /* Stack video and controls vertically */
+				align-items: center; /* Center items horizontally */
+				width: 100%; /* Use full width on small screens */
+				margin-bottom: 20px; /* Space below the camera area */
+			}
+
+			#video-container {
+				margin-right: 0; /* Remove right margin */
+				margin-bottom: 20px; /* Add bottom margin */
+				width: 95%; /* Use most of the width */
+				max-height: none; /* Remove max height constraint */
+				height: auto; /* Allow height to adjust based on aspect ratio */
+			}
+
+			#camera-controls-container {
+				width: 95%; /* Use most of the width */
+				max-height: none; /* Remove max height constraint */
+				padding: 10px; /* Adjust padding */
+				overflow-y: visible; /* Allow content to push container height */
+			}
+
+			.controls-main-bar {
+				flex-direction: row; /* Arrange main buttons horizontally */
+				justify-content: space-around; /* Distribute space */
+				gap: 10px; /* Adjust gap */
+				margin-bottom: 10px; /* Adjust margin */
+			}
+
+			.controls-left,
+			.controls-right,
+			.controls-center {
+				flex-direction: row; /* Arrange items horizontally within these sections */
+				justify-content: center; /* Center items */
+				padding: 0; /* Remove padding */
+				gap: 10px; /* Adjust gap */
+			}
+
+			.controls-left {
+				order: 1; /* Keep reset button on the left */
+			}
+
+			.controls-center {
+				order: 2; /* Keep shutter button in the center */
+			}
+
+			.controls-right {
+				order: 3; /* Keep other buttons on the right */
+			}
+
+			#zoom-controls {
+				flex-direction: row; /* Arrange zoom controls horizontally */
+				padding: 5px 10px; /* Adjust padding */
+				width: auto; /* Allow width to adjust */
+			}
+
+			.zoom-slider {
+				width: 100px; /* Make slider horizontal */
+				height: 5px; /* Adjust height */
+				transform: rotate(0deg); /* Remove rotation */
+				margin: 0 10px; /* Adjust margin */
+			}
+
+			.advanced-controls-bar {
+				flex-direction: row; /* Arrange advanced controls horizontally */
+				flex-wrap: wrap; /* Allow controls to wrap */
+				justify-content: center; /* Center control groups */
+				gap: 10px; /* Adjust gap between control groups */
+				margin-top: 10px; /* Adjust margin */
+			}
+
+			.control-group {
+				width: auto; /* Allow control groups to size based on content */
+				padding: 0 5px; /* Adjust padding */
+				gap: 2px; /* Adjust gap */
+			}
+
+				.control-group label {
+					font-size: 0.7em; /* Further reduce label size */
+				}
+
+			.slider-input-container {
+				flex-direction: row; /* Arrange slider and input horizontally */
+				gap: 5px; /* Adjust gap */
+				width: auto; /* Allow container to size based on content */
+			}
+
+			.control-group input[type="range"] {
+				width: 80px; /* Adjust slider width */
+			}
+
+			.control-group input[type="number"] {
+				width: 60px; /* Further reduce number input width */
+				font-size: 0.8em; /* Adjust font size */
+			}
+
+			#auto-focus-button {
+				margin-top: 10px; /* Adjust margin */
+			}
 		}
 	</style>
 </head>
@@ -197,22 +765,96 @@
 		<section id="photo-booth-section">
 			<div class="container">
 				<div class="row">
-					<div class="col-lg-12 col-12">
-						<h2 class="text-white">Photo Booth Fun</h2>
+					<div class="col-lg-12 col-12 d-flex flex-column align-items-center">
+						<h2 class="mb-4">Photo Booth Fun</h2>
 						<p>Get ready to capture some memories!</p>
 
-						<div id="camera-select-container">
-							<select id="camera-select" class="form-select d-inline-block w-auto bg-dark text-white rounded-pill border-0">
+						<div id="camera-select-container-outside">
+							<select id="camera-select-outside" class="form-select d-inline-block w-auto">
+								<option value="">Loading Cameras...</option>
 							</select>
 						</div>
 
-						<div id="video-container">
-							<video id="video-feed" autoplay playsinline></video>
-							<div id="video-overlay"></div> <div id="countdown"></div>
-							<div id="focus-indicator"></div>
+						<div id="camera-area">
+							<div id="video-container">
+								<video id="video-feed" autoplay playsinline></video>
+								<div id="video-overlay"></div>
+								<div id="grid-overlay">
+									<div></div><div></div><div></div>
+									<div></div><div></div><div></div>
+									<div></div><div></div><div></div>
+								</div>
+								<div id="countdown"></div>
+								<div id="focus-indicator"></div>
+							</div>
+
+							<div id="camera-controls-container">
+								<div class="controls-top-bar">
+								</div>
+								<div class="controls-main-bar">
+									<div class="controls-left">
+										<button id="reset-button" class="control-button" title="Reset Controls"><i class="bi-arrow-counterclockwise"></i></button>
+									</div>
+									<div class="controls-center">
+										<button id="capture-button" class="shutter-button" disabled aria-label="Take Photo"></button>
+									</div>
+									<div class="controls-right">
+										<button id="flash-toggle" class="control-button" title="Toggle Flash" style="display: none;"><i class="bi-flashlight"></i></button>
+										<button id="flip-camera-button" class="control-button" title="Flip Camera" style="display: none;"><i class="bi-arrow-repeat"></i></button>
+										<div id="zoom-controls" style="display: none;">
+											<button id="zoom-out-button" class="control-button zoom-button"><i class="bi-zoom-out"></i></button>
+											<input type="range" id="zoom-slider" class="zoom-slider" min="1" max="1" step="0.1" value="1">
+											<button id="zoom-in-button" class="control-button zoom-button"><i class="bi-zoom-in"></i></button>
+										</div>
+									</div>
+								</div>
+
+								<div class="advanced-controls-bar">
+									<div class="control-group" id="brightness-group" style="display: none;">
+										<label for="brightness-slider">Brightness</label>
+										<div class="slider-input-container">
+											<input type="range" id="brightness-slider" min="0" max="1" step="0.01" value="0.5">
+											<input type="number" id="brightness-input" min="0" max="1" step="0.01" value="0.5">
+										</div>
+									</div>
+
+									<div class="control-group" id="contrast-group" style="display: none;">
+										<label for="contrast-slider">Contrast</label>
+										<div class="slider-input-container">
+											<input type="range" id="contrast-slider" min="0" max="1" step="0.01" value="0.5">
+											<input type="number" id="contrast-input" min="0" max="1" step="0.01" value="0.5">
+										</div>
+									</div>
+
+									<div class="control-group" id="iso-group" style="display: none;">
+										<label for="iso-slider">ISO</label>
+										<div class="slider-input-container">
+											<input type="range" id="iso-slider" min="100" max="1600" step="1" value="100">
+											<input type="number" id="iso-input" min="100" max="1600" step="1" value="100">
+										</div>
+									</div>
+
+									<div class="control-group" id="exposure-group" style="display: none;">
+										<label for="exposure-slider">Shutter (ms)</label>
+										<div class="slider-input-container">
+											<input type="range" id="exposure-slider" min="1" max="1000" step="1" value="100">
+											<input type="number" id="exposure-input" min="1" max="1000" step="1" value="100">
+										</div>
+									</div>
+
+									<div class="control-group" id="focus-group" style="display: none;">
+										<label for="focus-slider">Focus Distance</label>
+										<div class="slider-input-container">
+											<input type="range" id="focus-slider" min="0" max="1" step="0.01" value="0">
+											<input type="number" id="focus-input" min="0" max="1" step="0.01" value="0">
+										</div>
+									</div>
+								</div>
+								<button id="auto-focus-button" style="display: none;">Auto Focus</button>
+
+							</div>
 						</div>
 
-						<button id="capture-button" class="btn btn-primary btn-lg" disabled>Start Photo Session</button>
 						<div id="captured-photos-container">
 						</div>
 
@@ -222,10 +864,15 @@
 							<img id="final-photo" alt="Combined Photo">
 						</div>
 
-						<button id="download-button" class="btn btn-success btn-lg" style="display: none;">
-							Download
-							Photo
-						</button>
+						<div class="d-flex justify-content-center mt-4">
+							<button id="download-button" class="btn btn-success btn-lg" style="display: none;">
+								Download Photo
+							</button>
+							<button id="whatsapp-button" class="btn btn-success btn-lg" style="display: none;">
+								Send to WhatsApp
+							</button>
+						</div>
+
 
 					</div>
 				</div>
@@ -244,6 +891,28 @@
 		</div>
 	</footer>
 
+	<div class="modal fade" id="whatsappModal" tabindex="-1" aria-labelledby="whatsappModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="whatsappModalLabel">Enter WhatsApp Number</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="mb-3">
+						<label for="whatsapp-number-input" class="form-label">Phone Number (with country code, no + or leading zeros):</label>
+						<input type="tel" class="form-control" id="whatsapp-number-input" placeholder="e.g., 6281234567890">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-success" id="send-whatsapp-button">Send</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
 	<script src="js/jquery.min.js"></script>
 	<script src="js/bootstrap.min.js"></script>
 	<script src="js/jquery.sticky.js"></script>
@@ -252,11 +921,53 @@
 
 	<script>
 		const videoFeed = document.getElementById('video-feed');
-		const videoContainer = document.getElementById('video-container'); // Added container reference
+		const videoContainer = document.getElementById('video-container');
 		const captureButton = document.getElementById('capture-button');
 		const countdownElement = document.getElementById('countdown');
-		const focusIndicator = document.getElementById('focus-indicator'); // Added focus indicator reference
-		const cameraSelect = document.getElementById('camera-select'); // Added camera select reference
+		const focusIndicator = document.getElementById('focus-indicator');
+		// Updated cameraSelect ID
+		const cameraSelect = document.getElementById('camera-select-outside');
+
+		// Main Controls
+		const flashToggle = document.getElementById('flash-toggle');
+		const flipCameraButton = document.getElementById('flip-camera-button');
+		const zoomControls = document.getElementById('zoom-controls');
+		const zoomOutButton = document.getElementById('zoom-out-button');
+		const zoomSlider = document.getElementById('zoom-slider');
+		const zoomInButton = document.getElementById('zoom-in-button');
+
+		// Advanced Controls Groups
+		const brightnessGroup = document.getElementById('brightness-group');
+		const contrastGroup = document.getElementById('contrast-group');
+		const isoGroup = document.getElementById('iso-group');
+		const exposureGroup = document.getElementById('exposure-group');
+		const focusGroup = document.getElementById('focus-group');
+
+		// Advanced Controls Sliders
+		const brightnessSlider = document.getElementById('brightness-slider');
+		const contrastSlider = document.getElementById('contrast-slider');
+		const isoSlider = document.getElementById('iso-slider');
+		const exposureSlider = document.getElementById('exposure-slider');
+		const focusSlider = document.getElementById('focus-slider');
+
+		// Advanced Controls Number Inputs
+		const brightnessInput = document.getElementById('brightness-input');
+		const contrastInput = document.getElementById('contrast-input');
+		const isoInput = document.getElementById('iso-input');
+		const exposureInput = document.getElementById('exposure-input');
+		const focusInput = document.getElementById('focus-input');
+
+		const autoFocusButton = document.getElementById('auto-focus-button');
+
+		// Reset Button
+		const resetButton = document.getElementById('reset-button');
+
+		// WhatsApp Button and Modal Elements
+		const whatsappButton = document.getElementById('whatsapp-button');
+		const whatsappModal = new bootstrap.Modal(document.getElementById('whatsappModal'));
+		const whatsappNumberInput = document.getElementById('whatsapp-number-input');
+		const sendWhatsappButton = document.getElementById('send-whatsapp-button');
+
 
 		const canvas = document.getElementById('canvas'); // Main canvas for final image
 		const context = canvas.getContext('2d');
@@ -269,6 +980,8 @@
 		let stream = null;
 		let capturedImages = [];
 		let isCapturing = false; // State variable to prevent interaction during capture
+		let isFlashOn = false; // State variable for flash
+		let currentFocusMode = 'continuous'; // Track current focus mode
 
 		const sourceAspectRatio = 16 / 9; // We will attempt to capture from a 16:9 area of the video feed
 		const individualCaptureAspectRatio = 9 / 8; // Each captured photo needs this ratio to stack into 9:16
@@ -296,28 +1009,31 @@
 		function checkReadyState() {
 			// Check if video feed is ready, overlay image is loaded,
 			// and the camera select has options (meaning devices were enumerated)
-			if (videoFeed.readyState >= 3 && overlayImage.complete && overlayImage.naturalHeight !== 0 && cameraSelect.options.length > 0) {
-				captureButton.disabled = false; // Enable button once all are ready
-				console.log("Camera, overlay, and camera list loaded. Button enabled.");
+			const videoReady = videoFeed.readyState >= 3 && videoFeed.videoWidth > 0;
+			const overlayReady = overlayImage.complete && overlayImage.naturalHeight !== 0;
+			const camerasListed = cameraSelect.options.length > 0 && cameraSelect.options[0].value !== ''; // Check value to ensure it's not the "Loading..." placeholder
+
+			if (videoReady && overlayReady && camerasListed && !isCapturing) {
+				captureButton.disabled = false; // Enable button once all are ready and not capturing
+				resetButton.disabled = false; // Enable reset button when camera is ready
+				// console.log("Camera, overlay, and camera list loaded. Button enabled.");
 			} else {
-				console.log("Waiting for components...", {
-					videoReady: videoFeed.readyState,
-					overlayComplete: overlayImage.complete,
-					overlayHeight: overlayImage.naturalHeight,
-					cameraOptions: cameraSelect.options.length
-				});
-				captureButton.disabled = true; // Keep disabled if not ready
+				captureButton.disabled = true; // Keep disabled if not ready or capturing
+				resetButton.disabled = true; // Disable reset button if camera is not ready
+				// console.log("Waiting for components...", {
+				// 	videoReady: videoReady,
+				// 	overlayComplete: overlayImage.complete,
+				// 	overlayHeight: overlayImage.naturalHeight,
+				// 	cameraOptions: cameraSelect.options.length,
+				// 	firstOptionValue: cameraSelect.options.length > 0 ? cameraSelect.options[0].value : 'N/A',
+				// 	isCapturing: isCapturing
+				// });
 			}
 		}
 
 		// Function to enumerate cameras and populate the select dropdown
-		async function enumerateAndPopulateCameras() {
+		async function enumerateAndPopulateCameras(selectedDeviceId = null) {
 			try {
-				// Ensure permissions are granted first to get device labels
-				// We can request a dummy stream and immediately stop it if needed,
-				// or rely on the main startCamera call granting permission.
-				// The checkReadyState function will wait for options to appear.
-
 				const devices = await navigator.mediaDevices.enumerateDevices();
 				const videoDevices = devices.filter(device => device.kind === 'videoinput');
 
@@ -329,6 +1045,7 @@
 					option.text = 'No cameras found';
 					cameraSelect.appendChild(option);
 					cameraSelect.disabled = true;
+					flipCameraButton.style.display = 'none'; // Hide flip button
 				} else {
 					videoDevices.forEach((device, index) => {
 						const option = document.createElement('option');
@@ -339,37 +1056,34 @@
 					});
 					cameraSelect.disabled = false;
 
-					// Set the select value to the currently active camera's deviceId
-					// if a stream is already running
-					if (stream) {
-						const currentTrack = stream.getVideoTracks()[0];
-						if (currentTrack) {
-							const currentDeviceId = currentTrack.getSettings().deviceId;
-							if (currentDeviceId) {
-								cameraSelect.value = currentDeviceId;
-							}
-						}
+					// Try to select the previously selected or a default camera
+					if (selectedDeviceId && videoDevices.find(d => d.deviceId === selectedDeviceId)) {
+						cameraSelect.value = selectedDeviceId;
 					} else {
-						// If no stream yet, try to select the user-facing camera by default
+						// Try to select the user-facing camera by default
 						const userFacingCamera = videoDevices.find(device =>
 							device.label.toLowerCase().includes('front') ||
-							device.label === '' // Often default camera has no label initially
+							(device.label === '' && videoDevices.length === 1) // Assume the only camera is front if no label
 						);
 						if (userFacingCamera) {
 							cameraSelect.value = userFacingCamera.deviceId;
 						} else if (videoDevices.length > 0) {
-							// Fallback to the first camera if no user-facing found
+							// Fallback to the first camera
 							cameraSelect.value = videoDevices[0].deviceId;
 						}
 					}
+
+					// Show flip button if more than one camera
+					flipCameraButton.style.display = videoDevices.length > 1 ? 'flex' : 'none';
 
 				}
 				checkReadyState(); // Check ready state after populating
 			} catch (err) {
 				console.error("Error enumerating devices: ", err);
-				alert("Could not list cameras.");
+				// alert("Could not list cameras."); // Avoid multiple alerts
 				cameraSelect.innerHTML = '<option value="">Error listing cameras</option>';
 				cameraSelect.disabled = true;
+				flipCameraButton.style.display = 'none'; // Hide flip button on error
 				checkReadyState(); // Check ready state on error
 			}
 		}
@@ -378,56 +1092,82 @@
 		// Function to start camera feed with specific constraints (or default)
 		async function startCamera(constraints = { video: { facingMode: 'user', aspectRatio: { ideal: sourceAspectRatio } } }) {
 			stopCamera(); // Stop any existing stream
+			videoFeed.classList.remove('ready'); // Hide video while loading
 
 			try {
 				stream = await navigator.mediaDevices.getUserMedia(constraints);
 				videoFeed.srcObject = stream;
 
 				videoFeed.onloadedmetadata = () => {
-					console.log("Video metadata loaded.");
+					// console.log("Video metadata loaded.");
 					// Wait for video to actually be able to play
 				};
 
 				videoFeed.oncanplaythrough = () => {
-					console.log("Video can play through. Playing.");
+					// console.log("Video can play through. Playing.");
 					videoFeed.play();
+					videoFeed.classList.add('ready'); // Show video when ready
 					checkReadyState(); // Check readiness when video is ready
-					// Also enumerate cameras here, in case permissions were just granted
-					enumerateAndPopulateCameras();
+
+					// Update controls based on the new track's capabilities
+					updateCameraControlsUI();
+
+					// Enumerate cameras here, in case permissions were just granted
+					// Pass the currently active deviceId to try and keep it selected
+					const currentTrack = stream.getVideoTracks()[0];
+					const currentDeviceId = currentTrack ? currentTrack.getSettings().deviceId : null;
+					enumerateAndPopulateCameras(currentDeviceId);
 				};
 
 				videoFeed.onerror = (e) => {
 					console.error("Error playing video feed: ", e);
-					alert("Error accessing camera feed. Please ensure permissions are granted and no other app is using the camera.");
+					// alert("Error accessing camera feed. Please ensure permissions are granted and no other app is using the camera."); // Avoid multiple alerts
 					captureButton.disabled = true; // Disable on video error
 					// Attempt to re-enumerate cameras in case error was permission-related
-					enumerateAndPopulateCameras();
+					enumerateAndPopulateCameras(constraints.video.deviceId ? constraints.video.deviceId.exact : null);
 				}
 
 			} catch (err) {
 				console.error("Error accessing camera: ", err);
 				if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-					alert("Camera access denied. Please allow camera permissions in your browser settings.");
+					// alert("Camera access denied. Please allow camera permissions in your browser settings.");
 				} else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-					alert("No camera found. Please ensure a camera is connected.");
+					// alert("No camera found. Please ensure a camera is connected.");
 				}
 				else {
-					alert(`Could not access camera: ${err.message}`);
+					// alert(`Could not access camera: ${err.message}`);
 				}
 				captureButton.disabled = true; // Keep button disabled on error
 				// Even on error, try to enumerate cameras to show "No cameras found" or list others
-				enumerateAndPopulateCameras();
+				enumerateAndPopulateCameras(constraints.video.deviceId ? constraints.video.deviceId.exact : null);
+				updateCameraControlsUI(); // Hide controls if no camera
 			}
 		}
 
 		// Function to stop camera feed
 		function stopCamera() {
 			if (stream) {
-				console.log("Stopping current stream...");
+				// console.log("Stopping current stream...");
 				stream.getTracks().forEach(track => track.stop());
 				videoFeed.srcObject = null;
 				stream = null; // Clear the stream variable
+				videoFeed.classList.remove('ready'); // Hide video
 			}
+			// Hide all controls when camera is stopped
+			flashToggle.style.display = 'none';
+			flipCameraButton.style.display = 'none';
+			zoomControls.style.display = 'none';
+			brightnessGroup.style.display = 'none';
+			contrastGroup.style.display = 'none';
+			isoGroup.style.display = 'none';
+			exposureGroup.style.display = 'none';
+			focusGroup.style.display = 'none';
+			autoFocusButton.style.display = 'none';
+
+			captureButton.disabled = true;
+			resetButton.disabled = true;
+			cameraSelect.innerHTML = '<option value="">Camera stopped</option>';
+			cameraSelect.disabled = true;
 		}
 
 		// Function to switch camera based on deviceId
@@ -436,7 +1176,7 @@
 				console.warn("No deviceId provided for switching camera.");
 				return;
 			}
-			console.log("Switching to camera:", deviceId);
+			// console.log("Switching to camera:", deviceId);
 			const constraints = {
 				video: {
 					deviceId: { exact: deviceId },
@@ -444,6 +1184,326 @@
 				}
 			};
 			startCamera(constraints); // Start camera with the selected device
+		}
+
+		// Function to update camera controls UI based on track capabilities
+		function updateCameraControlsUI() {
+			const track = stream ? stream.getVideoTracks()[0] : null;
+
+			if (!track) {
+				// No track, hide all controls
+				flashToggle.style.display = 'none';
+				flipCameraButton.style.display = 'none';
+				zoomControls.style.display = 'none';
+				brightnessGroup.style.display = 'none';
+				contrastGroup.style.display = 'none';
+				isoGroup.style.display = 'none';
+				exposureGroup.style.display = 'none';
+				focusGroup.style.display = 'none';
+				autoFocusButton.style.display = 'none';
+				resetButton.disabled = true; // Disable reset if no track
+				// Camera select state is handled in enumerateAndPopulateCameras
+				return;
+			}
+
+			const capabilities = track.getCapabilities();
+			const settings = track.getSettings();
+
+			// Flash/Torch Control
+			if (capabilities.torch) {
+				flashToggle.style.display = 'flex'; // Use flex to center icon
+				// No way to reliably read current torch state from settings
+				// Assume off initially or manage state manually
+				isFlashOn = false; // Reset state
+				// Update button icon based on isFlashOn
+				flashToggle.innerHTML = '<i class="bi-flashlight"></i>';
+			} else {
+				flashToggle.style.display = 'none';
+			}
+
+			// Zoom Control
+			if (capabilities.zoom) {
+				zoomControls.style.display = 'flex';
+				zoomSlider.min = capabilities.zoom.min;
+				zoomSlider.max = capabilities.zoom.max;
+				zoomSlider.step = capabilities.zoom.step || (capabilities.zoom.max - capabilities.zoom.min) / 100; // Default step if not provided
+				zoomSlider.value = settings.zoom || capabilities.zoom.min; // Set initial slider position
+				// Update button disabled state based on current zoom value
+				zoomOutButton.disabled = (parseFloat(zoomSlider.value) <= parseFloat(zoomSlider.min));
+				zoomInButton.disabled = (parseFloat(zoomSlider.value) >= parseFloat(zoomSlider.max));
+
+			} else {
+				zoomControls.style.display = 'none';
+			}
+
+			// Brightness Control
+			if (capabilities.brightness) {
+				brightnessGroup.style.display = 'flex';
+				brightnessSlider.min = capabilities.brightness.min;
+				brightnessSlider.max = capabilities.brightness.max;
+				brightnessSlider.step = capabilities.brightness.step || (capabilities.brightness.max - capabilities.brightness.min) / 100;
+				brightnessSlider.value = settings.brightness || (capabilities.brightness.min + capabilities.brightness.max) / 2; // Default to middle if no setting
+				// Also set number input attributes and value
+				brightnessInput.min = brightnessSlider.min;
+				brightnessInput.max = brightnessSlider.max;
+				brightnessInput.step = brightnessSlider.step;
+				brightnessInput.value = parseFloat(brightnessSlider.value).toFixed(2); // Format to 2 decimal places
+			} else {
+				brightnessGroup.style.display = 'none';
+			}
+
+			// Contrast Control
+			if (capabilities.contrast) {
+				contrastGroup.style.display = 'flex';
+				contrastSlider.min = capabilities.contrast.min;
+				contrastSlider.max = capabilities.contrast.max;
+				contrastSlider.step = capabilities.contrast.step || (capabilities.contrast.max - capabilities.contrast.min) / 100;
+				contrastSlider.value = settings.contrast || (capabilities.contrast.min + capabilities.contrast.max) / 2; // Default to middle
+				// Also set number input attributes and value
+				contrastInput.min = contrastSlider.min;
+				contrastInput.max = contrastSlider.max;
+				contrastInput.step = contrastSlider.step;
+				contrastInput.value = parseFloat(contrastSlider.value).toFixed(2); // Format to 2 decimal places
+			} else {
+				contrastGroup.style.display = 'none';
+			}
+
+			// ISO Control
+			if (capabilities.iso) {
+				isoGroup.style.display = 'flex';
+				isoSlider.min = capabilities.iso.min;
+				isoSlider.max = capabilities.iso.max;
+				isoSlider.step = capabilities.iso.step || 1; // ISO step is usually 1
+				isoSlider.value = settings.iso || capabilities.iso.min; // Default to min ISO
+				// Also set number input attributes and value
+				isoInput.min = isoSlider.min;
+				isoInput.max = isoSlider.max;
+				isoInput.step = isoSlider.step;
+				isoInput.value = parseInt(isoSlider.value, 10); // ISO is integer
+			} else {
+				isoGroup.style.display = 'none';
+			}
+
+			// Exposure Time (Shutter Speed) Control
+			// exposureTime is in microseconds (μs), convert to milliseconds (ms) for slider/input
+			if (capabilities.exposureTime) {
+				exposureGroup.style.display = 'flex';
+				// Convert min/max/value from μs to ms for the slider and input
+				const minMs = (capabilities.exposureTime.min / 1000);
+				const maxMs = (capabilities.exposureTime.max / 1000);
+				const stepMs = (capabilities.exposureTime.step / 1000) || 0.1;
+				const currentMs = (settings.exposureTime / 1000) || minMs;
+
+				exposureSlider.min = minMs.toFixed(2);
+				exposureSlider.max = maxMs.toFixed(2);
+				exposureSlider.step = stepMs.toFixed(2);
+				exposureSlider.value = currentMs.toFixed(2);
+
+				// Also set number input attributes and value
+				exposureInput.min = exposureSlider.min;
+				exposureInput.max = exposureSlider.max;
+				exposureInput.step = exposureSlider.step;
+				exposureInput.value = parseFloat(exposureInput.value).toFixed(2); // Format to 2 decimal places
+			} else {
+				exposureGroup.style.display = 'none';
+			}
+
+			// Focus Control (Manual and Auto)
+			if (capabilities.focusMode) {
+				// Show manual focus slider if 'manual' mode is supported
+				if (capabilities.focusMode.includes('manual') && capabilities.focusDistance) {
+					focusGroup.style.display = 'flex';
+					focusSlider.min = capabilities.focusDistance.min;
+					focusSlider.max = capabilities.focusDistance.max;
+					focusSlider.step = capabilities.focusDistance.step || 0.01;
+					// Set initial value based on current settings or default (near)
+					focusSlider.value = settings.focusMode === 'manual' && settings.focusDistance !== undefined ? settings.focusDistance : capabilities.focusDistance.min;
+					// Also set number input attributes and value
+					focusInput.min = focusSlider.min;
+					focusInput.max = focusSlider.max;
+					focusInput.step = focusSlider.step;
+					focusInput.value = parseFloat(focusInput.value).toFixed(2); // Format to 2 decimal places
+
+
+					// Disable manual slider and input if not in manual mode
+					const isManual = settings.focusMode === 'manual';
+					focusSlider.disabled = !isManual;
+					focusInput.disabled = !isManual;
+
+				} else {
+					focusGroup.style.display = 'none';
+				}
+
+				// Show Auto Focus button if 'single-shot' or 'continuous' is supported
+				if (capabilities.focusMode.includes('single-shot') || capabilities.focusMode.includes('continuous')) {
+					autoFocusButton.style.display = 'inline-block';
+					// Update button text based on current mode (if we could read it reliably)
+					// For simplicity, we'll just show "Auto Focus" button
+				} else {
+					autoFocusButton.style.display = 'none';
+				}
+
+				// Store the current focus mode setting
+				currentFocusMode = settings.focusMode;
+
+			} else {
+				focusGroup.style.display = 'none';
+				autoFocusButton.style.display = 'none';
+			}
+
+
+			// Flip Camera Control - Visibility handled by enumerateAndPopulateCameras
+			// Reset button enabled/disabled state handled by checkReadyState
+		}
+
+		// Function to apply constraints for advanced controls
+		function applyAdvancedConstraint(constraintName, value) {
+			const track = stream ? stream.getVideoTracks()[0] : null;
+			if (track && track.getCapabilities()[constraintName]) {
+				const constraints = {};
+				// For exposureTime, convert ms back to μs for the constraint
+				if (constraintName === 'exposureTime') {
+					constraints[constraintName] = value * 1000;
+				} else {
+					constraints[constraintName] = value;
+				}
+
+				track.applyConstraints({ advanced: [constraints] })
+					.then(() => {
+						// console.log(`Applied ${constraintName}:`, value);
+						// Optionally update UI based on actual applied settings if needed
+						// const settings = track.getSettings();
+						// console.log(`Actual ${constraintName}:`, settings[constraintName]);
+					})
+					.catch(e => {
+						console.error(`Error applying ${constraintName} constraint:`, e);
+						// Optionally revert slider/input or show error
+					});
+			} else {
+				console.warn(`${constraintName} constraint not supported by this camera/browser.`);
+			}
+		}
+
+		// Function to apply zoom constraints
+		function applyZoom(value) {
+			const track = stream ? stream.getVideoTracks()[0] : null;
+			if (track && track.getCapabilities().zoom) {
+				const capabilities = track.getCapabilities();
+				const clampedValue = Math.max(capabilities.zoom.min, Math.min(capabilities.zoom.max, value));
+				track.applyConstraints({ zoom: clampedValue })
+					.then(() => {
+						// Update slider value to match actual applied zoom
+						const settings = track.getSettings();
+						zoomSlider.value = settings.zoom;
+						// Update button disabled state
+						zoomOutButton.disabled = (parseFloat(zoomSlider.value) <= parseFloat(zoomSlider.min));
+						zoomInButton.disabled = (parseFloat(zoomSlider.value) >= parseFloat(zoomSlider.max));
+					})
+					.catch(e => {
+						console.error("Error applying zoom constraint:", e);
+						// Optionally revert slider or show error
+					});
+			}
+		}
+
+		// Function to set focus mode
+		function setFocusMode(mode) {
+			const track = stream ? stream.getVideoTracks()[0] : null;
+			if (track && track.getCapabilities().focusMode && track.getCapabilities().focusMode.includes(mode)) {
+				track.applyConstraints({ focusMode: mode })
+					.then(() => {
+						// console.log("Set focus mode to:", mode);
+						currentFocusMode = mode; // Update state variable
+						// Disable manual slider and input if not in manual mode
+						const isManual = mode === 'manual';
+						if (focusSlider) focusSlider.disabled = !isManual;
+						if (focusInput) focusInput.disabled = !isManual;
+					})
+					.catch(e => {
+						console.error(`Error setting focus mode to ${mode}:`, e);
+					});
+			} else {
+				console.warn(`Focus mode '${mode}' not supported by this camera/browser.`);
+			}
+		}
+
+
+		// Function to reset camera controls to 0 or minimum values
+		function resetCameraControls() {
+			const track = stream ? stream.getVideoTracks()[0] : null;
+			if (!track) return;
+
+			const capabilities = track.getCapabilities();
+
+			// Reset Zoom to Minimum (usually 1 or capability.min)
+			if (capabilities.zoom) {
+				const defaultZoom = capabilities.zoom.min;
+				zoomSlider.value = defaultZoom;
+				zoomOutButton.disabled = true;
+				zoomInButton.disabled = (parseFloat(defaultZoom) >= parseFloat(zoomSlider.max));
+				applyZoom(defaultZoom); // Apply zoom
+			}
+
+			// Reset Flash/Torch (turn off)
+			if (capabilities.torch) {
+				isFlashOn = false;
+				track.applyConstraints({ advanced: [{ torch: false }] })
+					.catch(e => console.error("Error turning off torch:", e));
+				// Update button icon if needed (currently doesn't change visually)
+			}
+
+			// Reset Brightness to 0 if supported, otherwise minimum
+			if (capabilities.brightness) {
+				// Check if 0 is within the valid range [min, max]
+				const defaultBrightness = capabilities.brightness.min <= 0 && capabilities.brightness.max >= 0 ? 0 : capabilities.brightness.min;
+				brightnessSlider.value = defaultBrightness;
+				brightnessInput.value = defaultBrightness.toFixed(2);
+				applyAdvancedConstraint('brightness', defaultBrightness); // Apply brightness
+			}
+
+			// Reset Contrast to 0 if supported, otherwise minimum
+			if (capabilities.contrast) {
+				// Check if 0 is within the valid range [min, max]
+				const defaultContrast = capabilities.contrast.min <= 0 && capabilities.contrast.max >= 0 ? 0 : capabilities.contrast.min;
+				contrastSlider.value = defaultContrast;
+				contrastInput.value = defaultContrast.toFixed(2);
+				applyAdvancedConstraint('contrast', defaultContrast); // Apply contrast
+			}
+
+			// Reset ISO to Minimum (0 is not a valid ISO value)
+			if (capabilities.iso) {
+				const defaultIso = capabilities.iso.min;
+				isoSlider.value = defaultIso;
+				isoInput.value = defaultIso;
+				applyAdvancedConstraint('iso', defaultIso); // Apply ISO
+			}
+
+			// Reset Exposure Time (Shutter Speed) to Minimum (0ms is not valid)
+			if (capabilities.exposureTime) {
+				const defaultExposureMs = (capabilities.exposureTime.min / 1000);
+				exposureSlider.value = defaultExposureMs.toFixed(2);
+				exposureInput.value = defaultExposureMs.toFixed(2);
+				applyAdvancedConstraint('exposureTime', capabilities.exposureTime.min); // Apply in microseconds
+			}
+
+			// Reset Focus (set to auto if supported, otherwise minimum distance if manual supported)
+			if (capabilities.focusMode) {
+				if (capabilities.focusMode.includes('continuous')) {
+					setFocusMode('continuous'); // Use setFocusMode to handle UI updates
+				} else if (capabilities.focusMode.includes('single-shot')) {
+					setFocusMode('single-shot'); // Use setFocusMode
+				} else if (capabilities.focusMode.includes('manual') && capabilities.focusDistance) {
+					// If only manual is supported, reset to near focus distance (minimum)
+					setFocusMode('manual'); // Use setFocusMode
+					const defaultFocus = capabilities.focusDistance.min;
+					focusSlider.value = defaultFocus;
+					focusInput.value = defaultFocus.toFixed(2);
+					applyAdvancedConstraint('focusDistance', defaultFocus); // Apply focus distance
+				}
+			}
+
+			console.log("Camera controls reset.");
+			updateCameraControlsUI(); // Ensure UI reflects actual settings after reset attempt
 		}
 
 
@@ -485,11 +1545,15 @@
 			canvas.height = individualCaptureHeight;
 
 			// Draw the cropped 9:8 segment from the 16:9 source area onto the 9:8 canvas.
+			// Apply the mirror transform *before* drawing the frame
+			context.save(); // Save current state
+			context.scale(-1, 1); // Mirror horizontally
 			context.drawImage(
 				videoFeed, // Source image
 				segmentX_source, segmentY_source, segmentWidth_source, segmentHeight_source, // Source rectangle
-				0, 0, canvas.width, canvas.height // Destination rectangle
+				-canvas.width, 0, canvas.width, canvas.height // Destination rectangle (negate x because of mirroring)
 			);
+			context.restore(); // Restore to original state
 
 			// Get the image data URL from the 9:8 canvas
 			const dataUrl = canvas.toDataURL('image/png');
@@ -499,11 +1563,35 @@
 		// Function to run the countdown and take a picture
 		function runCountdownAndCapture() {
 			isCapturing = true; // Set capturing state
+			checkReadyState(); // Update button state
+
 			let count = 3;
 			countdownElement.style.display = 'block';
 			countdownElement.textContent = count;
-			captureButton.disabled = true; // Ensure button is disabled during countdown
 			videoContainer.style.cursor = 'default'; // Change cursor during capture
+
+			// Disable all controls during capture
+			captureButton.disabled = true;
+			flashToggle.disabled = true;
+			flipCameraButton.disabled = true;
+			zoomSlider.disabled = true;
+			zoomOutButton.disabled = true;
+			zoomInButton.disabled = true;
+			brightnessSlider.disabled = true;
+			brightnessInput.disabled = true;
+			contrastSlider.disabled = true;
+			contrastInput.disabled = true;
+			isoSlider.disabled = true;
+			isoInput.disabled = true;
+			exposureSlider.disabled = true;
+			exposureInput.disabled = true;
+			focusSlider.disabled = true;
+			focusInput.disabled = true;
+			autoFocusButton.disabled = true;
+			cameraSelect.disabled = true;
+			resetButton.disabled = true;
+			whatsappButton.style.display = 'none'; // Hide WhatsApp button during capture
+
 
 			const timer = setInterval(() => {
 				count--;
@@ -520,14 +1608,43 @@
 					capturedImages.push(dataUrl);
 					displayCapturedPhoto(dataUrl); // Display the captured 9:8 frame
 
-					if (capturedImages.length < 2) { // Changed from < 3 to < 2 for two photos
+					if (capturedImages.length < 2) { // Capture two photos
 						// Take the second photo after a brief pause
-						setTimeout(runCountdownAndCapture, 1000);
+						setTimeout(runCountdownAndCapture, 1000); // 1-second pause
 					} else {
 						// Combine photos and finish
 						combinePhotos();
 						isCapturing = false; // Reset capturing state
 						videoContainer.style.cursor = 'pointer'; // Restore cursor
+
+						// Re-enable controls after capture sequence
+						flashToggle.disabled = false;
+						flipCameraButton.disabled = false;
+						zoomSlider.disabled = false;
+						zoomOutButton.disabled = false;
+						zoomInButton.disabled = false;
+						brightnessSlider.disabled = false;
+						brightnessInput.disabled = false;
+						contrastSlider.disabled = false;
+						contrastInput.disabled = false;
+						isoSlider.disabled = false;
+						isoInput.disabled = false;
+						exposureSlider.disabled = false;
+						exposureInput.disabled = false;
+						// Focus slider/input enabled state depends on currentFocusMode
+						const isManual = currentFocusMode === 'manual';
+						focusSlider.disabled = !isManual;
+						focusInput.disabled = !isManual;
+
+						autoFocusButton.disabled = false;
+						cameraSelect.disabled = false; // Re-enable select
+						resetButton.disabled = false;
+						// Show WhatsApp button after combining
+						whatsappButton.style.display = 'inline-block';
+
+
+						updateCameraControlsUI(); // Ensure controls are enabled based on capabilities
+						checkReadyState(); // Final check to enable capture button if everything is ready
 					}
 				}
 			}, 1000);
@@ -611,13 +1728,16 @@
 						finalPhoto.src = canvas.toDataURL('image/png');
 						finalPhoto.style.display = 'block';
 						downloadButton.style.display = 'inline-block';
+						whatsappButton.style.display = 'inline-block'; // Show WhatsApp button
+
 
 						// Clean up individual displayed photos
 						capturedPhotosContainer.innerHTML = '';
 
 						// Reset for next session
 						capturedImages = [];
-						captureButton.textContent = 'Start Photo Session';
+						// captureButton.textContent = 'Start Photo Session'; // Text is now hidden by CSS
+
 						checkReadyState(); // Re-enable button after everything is done if ready
 					})
 					.catch(error => {
@@ -626,7 +1746,7 @@
 						// Reset state on error
 						capturedImages = [];
 						capturedPhotosContainer.innerHTML = '';
-						captureButton.textContent = 'Start Photo Session';
+						// captureButton.textContent = 'Start Photo Session';
 						isCapturing = false; // Reset capturing state
 						videoContainer.style.cursor = 'pointer'; // Restore cursor
 						checkReadyState(); // Re-enable button on error if ready
@@ -640,11 +1760,12 @@
 		captureButton.addEventListener('click', () => {
 			// Only start the sequence if not already in progress and button is enabled
 			if (!isCapturing && !captureButton.disabled) {
-				captureButton.textContent = 'Get Ready...';
+				// captureButton.textContent = 'Get Ready...'; // Text is hidden by CSS
 				captureButton.disabled = true; // Disable button immediately on click
 				// Clear previous results
 				finalPhoto.style.display = 'none';
 				downloadButton.style.display = 'none';
+				whatsappButton.style.display = 'none'; // Hide WhatsApp button
 				capturedPhotosContainer.innerHTML = '';
 
 				runCountdownAndCapture();
@@ -659,7 +1780,52 @@
 			link.click();
 		});
 
-		// Event listener for camera selection change
+		// Event listener for WhatsApp button - Opens the modal
+		whatsappButton.addEventListener('click', () => {
+			if (finalPhoto.src && finalPhoto.src !== '') {
+				whatsappModal.show(); // Show the modal
+			} else {
+				console.warn("No final photo available to share on WhatsApp.");
+				// Optionally show a message to the user
+			}
+		});
+
+		// Event listener for the Send button inside the WhatsApp modal
+		sendWhatsappButton.addEventListener('click', () => {
+			const phoneNumber = whatsappNumberInput.value.trim();
+			const imageDataUrl = finalPhoto.src;
+
+			if (phoneNumber === '') {
+				alert("Please enter a valid phone number.");
+				return;
+			}
+
+			if (imageDataUrl && imageDataUrl !== '') {
+				// Construct the WhatsApp Web/App link
+				// Format: https://wa.me/phonenumber?text=urlencodedtext
+				// Phone number should include country code, no + or leading zeros.
+				const message = encodeURIComponent("Check out my photo booth picture!");
+				// Including the data URL in the text is unreliable for sending the image itself.
+				// It might just send the text string.
+				const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}%0A${encodeURIComponent(imageDataUrl)}`;
+
+				// Try opening in a new window/tab
+				window.open(whatsappUrl, '_blank');
+
+				console.warn("Sharing image data directly via WhatsApp link may not work on all devices/browsers, especially for large images. The link attempts to open a chat with the number and include the image data as text.");
+
+				whatsappModal.hide(); // Hide the modal after attempting to send
+				whatsappNumberInput.value = ''; // Clear the input field
+			} else {
+				console.warn("No final photo available to share on WhatsApp.");
+				whatsappModal.hide(); // Hide the modal
+				whatsappNumberInput.value = ''; // Clear the input field
+				// Optionally show a message to the user
+			}
+		});
+
+
+		// Event listener for camera selection change (using the outside select)
 		cameraSelect.addEventListener('change', (event) => {
 			const selectedDeviceId = event.target.value;
 			if (selectedDeviceId) {
@@ -669,7 +1835,7 @@
 
 		// Event listener for clicking the video container (simulated tap-to-focus)
 		videoContainer.addEventListener('click', (event) => {
-			// Only show indicator if not currently capturing
+			// Only show indicator and attempt focus if not currently capturing
 			if (!isCapturing) {
 				const videoRect = videoContainer.getBoundingClientRect();
 				const offsetX = event.clientX - videoRect.left;
@@ -687,11 +1853,222 @@
 					focusIndicator.classList.remove('show');
 				}, 500); // Indicator stays visible for 500ms
 
-				// In a real application, you might try to apply
-				// MediaTrackConstraints here like focusMode, exposureMode, etc.
-				// However, support is inconsistent across browsers/devices.
-				// For this example, it's just a visual indicator.
+				// *** Attempt to trigger single-shot auto-focus if supported ***
+				const track = stream ? stream.getVideoTracks()[0] : null;
+				if (track && track.getCapabilities().focusMode && track.getCapabilities().focusMode.includes('single-shot')) {
+					// Setting focusMode to 'single-shot' often triggers an autofocus cycle
+					// Note: Applying focusDistance based on tap coordinates is not a standard
+					// feature of the MediaDevices API. This is the closest we can get.
+					setFocusMode('single-shot');
+					// After a short delay, potentially switch back to continuous if that was the mode
+					if (track.getCapabilities().focusMode.includes('continuous')) {
+						setTimeout(() => {
+							setFocusMode('continuous');
+						}, 1000); // Wait 1 second after single-shot
+					}
+				} else {
+					console.warn("Single-shot auto-focus not supported by this camera/browser.");
+				}
 				// console.log(`Tapped at: (${offsetX}, ${offsetY}) relative to video container`);
+			}
+		});
+
+		// Event listener for Flash Toggle
+		flashToggle.addEventListener('click', () => {
+			const track = stream ? stream.getVideoTracks()[0] : null;
+			if (track && track.getCapabilities().torch && !flashToggle.disabled) {
+				isFlashOn = !isFlashOn;
+				track.applyConstraints({ advanced: [{ torch: isFlashOn }] })
+					.catch(e => console.error("Error toggling flash:", e));
+			}
+		});
+
+		// Event listener for Flip Camera button
+		flipCameraButton.addEventListener('click', async () => {
+			if (flipCameraButton.disabled) return;
+
+			const currentDeviceId = cameraSelect.value;
+			const devices = await navigator.mediaDevices.enumerateDevices();
+			const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+			if (videoDevices.length > 1) {
+				// Find the device that is NOT the current one
+				const otherDevice = videoDevices.find(device => device.deviceId !== currentDeviceId);
+
+				if (otherDevice) {
+					// Switch to the other camera
+					switchCamera(otherDevice.deviceId);
+					// The cameraSelect value will be updated by enumerateAndPopulateCameras
+				}
+			}
+		});
+
+		// Event listeners for Zoom Controls
+		zoomSlider.addEventListener('input', (event) => {
+			if (!zoomSlider.disabled) {
+				const zoomValue = parseFloat(event.target.value);
+				applyZoom(zoomValue);
+			}
+		});
+
+		zoomOutButton.addEventListener('click', () => {
+			if (!zoomOutButton.disabled) {
+				const track = stream ? stream.getVideoTracks()[0] : null;
+				if (track && track.getCapabilities().zoom) {
+					const capabilities = track.getCapabilities();
+					const currentZoom = parseFloat(zoomSlider.value);
+					// Decrease zoom by one step, or a fixed amount if step is tiny
+					const step = capabilities.zoom.step || 0.1;
+					const newZoom = currentZoom - step;
+					applyZoom(newZoom);
+				}
+			}
+		});
+
+		zoomInButton.addEventListener('click', () => {
+			if (!zoomInButton.disabled) {
+				const track = stream ? stream.getVideoTracks()[0] : null;
+				if (track && track.getCapabilities().zoom) {
+					const capabilities = track.getCapabilities();
+					const currentZoom = parseFloat(zoomSlider.value);
+					// Increase zoom by one step, or a fixed amount if step is tiny
+					const step = capabilities.zoom.step || 0.1;
+					const newZoom = currentZoom + step;
+					applyZoom(newZoom);
+				}
+			}
+		});
+
+		// Event listeners for Advanced Controls Sliders
+		brightnessSlider.addEventListener('input', (event) => {
+			if (!brightnessSlider.disabled) {
+				const value = parseFloat(event.target.value);
+				applyAdvancedConstraint('brightness', value);
+				brightnessInput.value = value.toFixed(2); // Update number input
+			}
+		});
+
+		contrastSlider.addEventListener('input', (event) => {
+			if (!contrastSlider.disabled) {
+				const value = parseFloat(event.target.value);
+				applyAdvancedConstraint('contrast', value);
+				contrastInput.value = value.toFixed(2); // Update number input
+			}
+		});
+
+		isoSlider.addEventListener('input', (event) => {
+			if (!isoSlider.disabled) {
+				const value = parseInt(event.target.value, 10);
+				applyAdvancedConstraint('iso', value);
+				isoInput.value = value; // Update number input
+			}
+		});
+
+		exposureSlider.addEventListener('input', (event) => {
+			if (!exposureSlider.disabled) {
+				const value = parseFloat(event.target.value); // value is in ms
+				applyAdvancedConstraint('exposureTime', value); // Function expects ms, converts to μs
+				exposureInput.value = value.toFixed(2); // Update number input
+			}
+		});
+
+		focusSlider.addEventListener('input', (event) => {
+			// Manual focus slider should only work if focusMode is 'manual'
+			const track = stream ? stream.getVideoTracks()[0] : null;
+			if (track && track.getCapabilities().focusMode && track.getCapabilities().focusMode.includes('manual') && !focusSlider.disabled) {
+				const value = parseFloat(event.target.value);
+				// Ensure we are in manual focus mode before applying distance
+				if (currentFocusMode !== 'manual') {
+					setFocusMode('manual');
+				}
+				applyAdvancedConstraint('focusDistance', value);
+				focusInput.value = value.toFixed(2); // Update number input
+			} else {
+				console.warn("Manual focus distance control not available or not in manual mode.");
+			}
+		});
+
+		// Event listeners for Advanced Controls Number Inputs
+		brightnessInput.addEventListener('change', (event) => { // Use 'change' for number inputs
+			if (!brightnessInput.disabled) {
+				const value = parseFloat(event.target.value);
+				// Clamp value within min/max
+				const clampedValue = Math.max(parseFloat(brightnessInput.min), Math.min(parseFloat(brightnessInput.max), value));
+				brightnessInput.value = clampedValue.toFixed(2); // Update input value if clamped
+				brightnessSlider.value = clampedValue; // Update slider
+				applyAdvancedConstraint('brightness', clampedValue);
+			}
+		});
+
+		contrastInput.addEventListener('change', (event) => {
+			if (!contrastInput.disabled) {
+				const value = parseFloat(event.target.value);
+				const clampedValue = Math.max(parseFloat(contrastInput.min), Math.min(parseFloat(contrastInput.max), value));
+				contrastInput.value = clampedValue.toFixed(2);
+				contrastSlider.value = clampedValue;
+				applyAdvancedConstraint('contrast', clampedValue);
+			}
+		});
+
+		isoInput.addEventListener('change', (event) => {
+			if (!isoInput.disabled) {
+				const value = parseInt(event.target.value, 10);
+				const clampedValue = Math.max(parseInt(isoInput.min, 10), Math.min(parseInt(isoInput.max, 10), value));
+				isoInput.value = clampedValue;
+				isoSlider.value = clampedValue;
+				applyAdvancedConstraint('iso', clampedValue);
+			}
+		});
+
+		exposureInput.addEventListener('change', (event) => {
+			if (!exposureInput.disabled) {
+				const value = parseFloat(event.target.value); // value is in ms
+				const clampedValue = Math.max(parseFloat(exposureInput.min), Math.min(parseFloat(exposureInput.max), value));
+				exposureInput.value = clampedValue.toFixed(2);
+				exposureSlider.value = clampedValue;
+				applyAdvancedConstraint('exposureTime', clampedValue); // Function expects ms, converts to μs
+			}
+		});
+
+		focusInput.addEventListener('change', (event) => {
+			const track = stream ? stream.getVideoTracks()[0] : null;
+			if (track && track.getCapabilities().focusMode && track.getCapabilities().focusMode.includes('manual') && !focusInput.disabled) {
+				const value = parseFloat(event.target.value);
+				const clampedValue = Math.max(parseFloat(focusInput.min), Math.min(parseFloat(focusInput.max), value));
+				focusInput.value = clampedValue.toFixed(2);
+				focusSlider.value = clampedValue;
+				// Ensure we are in manual focus mode before applying distance
+				if (currentFocusMode !== 'manual') {
+					setFocusMode('manual');
+				}
+				applyAdvancedConstraint('focusDistance', clampedValue);
+			} else {
+				console.warn("Manual focus distance control not available or not in manual mode.");
+				// Revert input value if control is not available
+				if (focusSlider) focusInput.value = parseFloat(focusSlider.value).toFixed(2);
+			}
+		});
+
+
+		// Event listener for Auto Focus button
+		autoFocusButton.addEventListener('click', () => {
+			const track = stream ? stream.getVideoTracks()[0] : null;
+			if (track && track.getCapabilities().focusMode && !autoFocusButton.disabled) {
+				// Prioritize 'continuous' if available, otherwise use 'single-shot'
+				if (track.getCapabilities().focusMode.includes('continuous')) {
+					setFocusMode('continuous');
+				} else if (track.getCapabilities().focusMode.includes('single-shot')) {
+					setFocusMode('single-shot');
+				} else {
+					console.warn("No auto focus mode ('continuous' or 'single-shot') supported.");
+				}
+			}
+		});
+
+		// Event listener for Reset Button
+		resetButton.addEventListener('click', () => {
+			if (!resetButton.disabled) {
+				resetCameraControls();
 			}
 		});
 
@@ -709,7 +2086,8 @@
 
 		// Start the camera when the page loads
 		// This initial call will request permission and trigger enumeration
-		startCamera();
+		// Start with user-facing camera as default preference
+		startCamera({ video: { facingMode: 'user', aspectRatio: { ideal: sourceAspectRatio } } });
 
 
 		// Optional: Stop camera when the page is closed or navigated away
@@ -722,11 +2100,12 @@
 			} else {
 				// When returning to the page, restart the camera with the selected device
 				const selectedDeviceId = cameraSelect.value;
-				if (selectedDeviceId) {
+				if (selectedDeviceId && selectedDeviceId !== '') { // Ensure a device was actually selected/found
 					switchCamera(selectedDeviceId);
 				} else {
-					// If no device selected (e.g., initial load), start with default
-					startCamera();
+					// If no device was selected (e.g., initial load failed or no cameras found),
+					// try starting with default constraints again.
+					startCamera({ video: { facingMode: 'user', aspectRatio: { ideal: sourceAspectRatio } } });
 				}
 			}
 		});
