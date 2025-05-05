@@ -1857,7 +1857,7 @@
 					// Focus slider/input enabled state depends on currentFocusMode
 					const isManual = currentFocusMode === 'manual';
 					focusSlider.disabled = !isManual;
-					focusInput.disabled = !isManual;
+					focusInput.disabled = !isInput.disabled;
 
 					autoFocusButton.disabled = false;
 					cameraSelect.disabled = false; // Re-enable select
@@ -1893,29 +1893,48 @@
 
 
 		// Event listener for Email button (Changed from WhatsApp)
-		emailButton.addEventListener('click', () => {
+		emailButton.addEventListener('click', async () => {
 			if (generatedImageUrls.length > 0) {
-				let emailBody = "Here are your photo booth pictures!\n\n";
-				const subject = "Your Freedom 2025 Photo Booth Pictures";
+				const subject = "Your Freedom 2025 Photo Booth Pictures (as Zip)";
+				const emailBody = "Please find your photo booth pictures attached as a zip file.";
+				const zipFileName = "photobooth_freedom2025_all.zip";
 
-				// Append each image data URL to the email body
-				// WARNING: This is highly unreliable for sending images as attachments
-				// and may result in a very large email body that fails to send or load.
-				// It is NOT possible to send attachments directly via mailto link.
-				generatedImageUrls.forEach((imgInfo, index) => {
-					emailBody += `${imgInfo.name}:\n${imgInfo.url}\n\n`;
+				// Generate the zip file first
+				const zip = new JSZip();
+				generatedImageUrls.forEach(imgInfo => {
+					const base64Data = imgInfo.url.replace(/^data:image\/(png|jpg);base64,/, '');
+					zip.file(imgInfo.name, base64Data, { base64: true });
 				});
 
-				// Note: Sending from a specific domain like @github.com is NOT possible
-				// using a client-side mailto link. This requires server-side email sending.
-				// The mailto link will open the user's default email client, and the 'From' address
-				// will be whatever is configured in their client.
-				const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+				try {
+					const zipBlob = await zip.generateAsync({ type: "blob" });
 
-				// Attempt to open the user's email client
-				window.location.href = mailtoUrl;
+					// Attempt to create a mailto link with the zip file data
+					// WARNING: This is highly unreliable and likely won't work as a direct attachment.
+					// It's included here to match the request but is NOT a robust solution.
+					// The user will likely need to manually attach the downloaded zip.
+					const reader = new FileReader();
+					reader.onload = function (event) {
+						const base64Zip = event.target.result.split(',')[1];
+						// Construct a mailto link with the base64 data (highly unlikely to work as attachment)
+						const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}&attachment=${encodeURIComponent(zipFileName)};base64,${encodeURIComponent(base64Zip)}`;
 
-				console.warn("Attempting to send images via mailto link. Direct image attachments are not supported this way. The image data is included as text in the email body, which may not work. Sending from a specific domain is not possible client-side.");
+						// Attempt to open the user's email client
+						window.location.href = mailtoUrl;
+
+						console.warn("Attempting to send zip via mailto link. Direct file attachments are not supported this way. The zip data is included in a non-standard way and will likely not be recognized as an attachment. The user will likely need to manually download and attach the zip.");
+					};
+					reader.onerror = function (error) {
+						console.error("Error reading zip blob for email:", error);
+						alert("Could not prepare zip file for email.");
+					};
+					reader.readAsDataURL(zipBlob);
+
+
+				} catch (err) {
+					console.error("Error generating zip file for email:", err);
+					alert("Could not generate zip file for email.");
+				}
 
 			} else {
 				console.warn("No images available to send via email.");
