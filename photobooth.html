@@ -82,11 +82,11 @@
 			max-width: 1200px; /* Max width for the camera area */
 			margin-bottom: 20px; /* Space below the camera area */
 			flex-grow: 1; /* Allow camera area to grow */
+			/* Removed height constraints here, let children control */
 		}
 
 
-		#video-container,
-		#final-photo-container {
+		#video-container {
 			position: relative;
 			flex-grow: 1; /* Allow video/photo to take available space */
 			border-radius: 25px;
@@ -98,9 +98,10 @@
 			justify-content: center;
 			align-items: center;
 			width: 100%; /* Take full width within its flex container */
-			max-width: 500px; /* Limit max width for a comfortable 9:16 view */
+			/* max-width: 500px; Removed max-width to allow horizontal growth */
 			aspect-ratio: 9 / 16; /* Set container aspect ratio to 9:16 */
-			max-height: calc(100vh - 300px); /* Limit height to leave space for controls/header/footer */
+			height: auto; /* Allow height to adjust based on aspect ratio */
+			/* Removed max-height: calc(100vh - 300px); */
 		}
 
 		#video-container {
@@ -123,15 +124,8 @@
 				opacity: 1; /* Fade in when ready */
 			}
 
-		#final-photo {
-			display: block; /* Ensure image takes up space */
-			width: 100%; /* Fill container width */
-			height: 100%; /* Fill container height */
-			object-fit: cover; /* Cover the container while maintaining aspect ratio */
-			border: 0;
-			border-radius: 25px; /* Match container radius */
-			box-shadow: none; /* Shadow is on the container */
-			/* aspect-ratio is handled by the container */
+		#final-photo { /* This will be hidden */
+			display: none;
 		}
 
 
@@ -266,7 +260,6 @@
 			flex-direction: column; /* Stack controls vertically */
 			align-items: center; /* Center controls horizontally within the bar */
 			overflow-y: auto; /* Allow scrolling if controls exceed height */
-			/* max-height: calc(100vh - 300px); Remove fixed height constraint */
 			height: auto; /* Allow height to be determined by content */
 		}
 
@@ -566,40 +559,66 @@
 
 
 		#captured-photos-container {
-			display: none; /* Hide the container for individual captured photos */
-		}
-
-		#final-photo-container {
+			display: flex; /* Show the container for displaying results */
+			justify-content: center;
+			align-items: center;
+			flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+			gap: 20px; /* Space between images */
 			margin-top: 30px;
-			/* Removed max-width and margin: auto */
-			flex-grow: 1; /* Allow it to grow */
-			width: 100%; /* Take full width of parent */
-			height: auto; /* Adjust height based on content */
-			max-height: calc(100vh - 300px); /* Limit height to leave space for controls/header/footer */
-			margin-right: 0; /* Remove margin right on small screens */
-			margin-bottom: 20px; /* Add space below */
+			margin-bottom: 20px;
+			width: 95%; /* Use most of the width */
+			max-width: 1200px; /* Match camera area max width */
+			height: auto; /* Allow height to adjust based on content */
+			/* Removed max-height: calc(100vh - 300px); */
 		}
 
-		#final-photo {
-			/* Styles moved to #final-photo */
-			display: none; /* Start hidden */
+		.final-result-photo { /* Class for the 4 final images */
+			display: block;
+			width: 100%; /* Take full width within its flex item */
+			max-width: 250px; /* Limit max width for each image */
+			height: auto; /* Maintain aspect ratio */
+			aspect-ratio: 9 / 16; /* Ensure 9:16 aspect ratio */
+			object-fit: cover; /* Cover the container */
+			border-radius: 15px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 		}
 
-		#download-button, #whatsapp-button {
+		#final-photo-container { /* This will be hidden */
+			display: none;
+		}
+
+		#final-photo { /* This will be hidden */
+			display: none;
+		}
+
+		#download-buttons-container {
+			display: flex;
+			flex-direction: column; /* Stack download buttons vertically */
+			align-items: center;
+			gap: 10px; /* Space between download buttons */
+			margin-top: 20px;
+		}
+
+			#download-buttons-container .btn {
+				width: 200px; /* Give buttons a fixed width */
+			}
+
+
+		#download-button, #email-button { /* Changed whatsapp-button to email-button */
 			margin-top: 20px;
 			margin-left: 10px; /* Space between buttons */
 			margin-right: 10px; /* Space between buttons */
 		}
 
 		#canvas {
-			display: none;
+			display: none; /* Keep canvas hidden */
 		}
 
 		#temp-canvas {
-			display: none;
+			display: none; /* Keep temp canvas hidden */
 		}
 
-		/* Modal Styles */
+		/* Modal Styles - Keep for potential future use, but WhatsApp modal is removed */
 		.modal-content {
 			background-color: #1a1a1a; /* Dark background for modal */
 			color: white; /* White text for modal */
@@ -722,6 +741,16 @@
 				width: 80px; /* Adjust width */
 				font-size: 0.9em;
 			}
+
+			#captured-photos-container {
+				flex-direction: row; /* Arrange images horizontally */
+				justify-content: center;
+			}
+
+			#download-buttons-container {
+				flex-direction: row; /* Arrange download buttons horizontally */
+				justify-content: center;
+			}
 		}
 
 		@media (max-width: 767.98px) {
@@ -813,6 +842,20 @@
 
 			#auto-focus-button {
 				margin-top: 10px;
+			}
+
+			#captured-photos-container {
+				flex-direction: column; /* Stack images vertically */
+				align-items: center;
+			}
+
+			.final-result-photo {
+				max-width: 95%; /* Allow images to take more width on small screens */
+			}
+
+			#download-buttons-container {
+				flex-direction: column; /* Stack download buttons vertically */
+				align-items: center;
 			}
 		}
 	</style>
@@ -946,12 +989,12 @@
 							<img id="final-photo" alt="Captured Photo">
 						</div>
 
+						<div id="download-buttons-container" style="display: none;">
+						</div>
+
 						<div class="d-flex justify-content-center mt-4">
-							<button id="download-button" class="btn btn-success btn-lg" style="display: none;">
-								Download Photo
-							</button>
-							<button id="whatsapp-button" class="btn btn-success btn-lg" style="display: none;">
-								Send to WhatsApp
+							<button id="email-button" class="btn btn-success btn-lg" style="display: none;">
+								Send to Email
 							</button>
 						</div>
 
@@ -973,27 +1016,8 @@
 		</div>
 	</footer>
 
-	<div class="modal fade" id="whatsappModal" tabindex="-1" aria-labelledby="whatsappModalLabel" aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="whatsappModalLabel">Enter WhatsApp Number</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<div class="mb-3">
-						<label for="whatsapp-number-input" class="form-label">Phone Number (with country code, no + or leading zeros):</label>
-						<input type="tel" class="form-control" id="whatsapp-number-input" placeholder="e.g., 6281234567890">
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-					<button type="button" class="btn btn-success" id="send-whatsapp-button">Send</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
 	<script src="js/jquery.min.js"></script>
 	<script src="js/bootstrap.min.js"></script>
@@ -1044,22 +1068,22 @@
 		// Reset Button
 		const resetButton = document.getElementById('reset-button');
 
-		// WhatsApp Button and Modal Elements
-		const whatsappButton = document.getElementById('whatsapp-button');
-		const whatsappModal = new bootstrap.Modal(document.getElementById('whatsappModal'));
-		const whatsappNumberInput = document.getElementById('whatsapp-number-input');
-		const sendWhatsappButton = document.getElementById('send-whatsapp-button');
+		// Email Button (Changed from WhatsApp)
+		const emailButton = document.getElementById('email-button');
+
+		// Container for download buttons
+		const downloadButtonsContainer = document.getElementById('download-buttons-container');
 
 
-		const canvas = document.getElementById('canvas'); // Main canvas for final image
+		const canvas = document.getElementById('canvas'); // Main canvas for final image processing
 		const context = canvas.getContext('2d');
 		// tempCanvas is no longer strictly needed for combining, but keep it just in case future features need it
 		const tempCanvas = document.getElementById('temp-canvas');
 		const tempContext = tempCanvas.getContext('2d');
 
-		const capturedPhotosContainer = document.getElementById('captured-photos-container'); // Will be hidden
-		const finalPhoto = document.getElementById('final-photo');
-		const downloadButton = document.getElementById('download-button');
+		const capturedPhotosContainer = document.getElementById('captured-photos-container'); // Container for displaying final results
+		const finalPhoto = document.getElementById('final-photo'); // This will be hidden
+
 
 		let stream = null;
 		let isCapturing = false; // State variable to prevent interaction during capture
@@ -1069,40 +1093,49 @@
 		// Define the desired output aspect ratio (9:16)
 		const outputAspectRatio = 9 / 16;
 
-		// Define a target resolution for the final output (maintaining 9:16 ratio)
-		const outputWidth = 450; // Example width
-		const outputHeight = outputWidth / outputAspectRatio; // Calculate height based on ratio (e.g., 450 / (9/16) = 800)
+		// Define the target resolution for the final output (1080x1920)
+		const outputWidth = 1080;
+		const outputHeight = 1920;
 
+		// Store the generated image data URLs for download/email
+		let generatedImageUrls = [];
 
-		// *** IMPORTANT: Set the path to your PNG overlay image here ***
-		const overlayImagePath = 'images/PhotoBooth/FreedomCoachRaymondFrame.png'; // <--- REPLACE WITH YOUR PNG PATH
+		// *** IMPORTANT: Set the paths to your PNG overlay images here ***
+		const overlayImagePaths = [
+			'images/PhotoBooth/FreedomCoachRaymondFrame.png',
+			'images/PhotoBooth/FreedomCoachRaymondFrame1.png',
+			'images/PhotoBooth/FreedomCoachRaymondFrame2.png',
+			'images/PhotoBooth/FreedomCoachRaymondFrame3.png'
+		];
 		// **************************************************************
 
-		const overlayImage = new Image();
-		overlayImage.crossOrigin = 'anonymous'; // Needed if loading from a different domain
-		overlayImage.src = overlayImagePath;
+		// Load overlay images once
+		const overlayImages = overlayImagePaths.map(path => {
+			const img = new Image();
+			img.crossOrigin = 'anonymous';
+			img.src = path;
+			return img;
+		});
 
-		// Function to check if camera, overlay, and initial camera list are loaded
+		// Function to check if camera, overlay images, and initial camera list are loaded
 		function checkReadyState() {
-			// Check if video feed is ready, overlay image is loaded,
+			// Check if video feed is ready, all overlay images are loaded,
 			// and the camera select has options (meaning devices were enumerated)
 			const videoReady = videoFeed.readyState >= 3 && videoFeed.videoWidth > 0;
-			const overlayReady = overlayImage.complete && overlayImage.naturalHeight !== 0;
+			const allOverlaysReady = overlayImages.every(img => img.complete && img.naturalHeight !== 0);
 			const camerasListed = cameraSelect.options.length > 0 && cameraSelect.options[0].value !== ''; // Check value to ensure it's not the "Loading..." placeholder
 
-			if (videoReady && overlayReady && camerasListed && !isCapturing) {
+			if (videoReady && allOverlaysReady && camerasListed && !isCapturing) {
 				captureButton.disabled = false; // Enable button once all are ready and not capturing
 				resetButton.disabled = false; // Enable reset button when camera is ready
-				// console.log("Camera, overlay, and camera list loaded. Button enabled.");
+				// console.log("Camera, overlays, and camera list loaded. Button enabled.");
 			} else {
 				captureButton.disabled = true; // Keep disabled if not ready or capturing
 				resetButton.disabled = true; // Disable reset button if camera is not ready
 				// console.log("Waiting for components...", {
 				// 	videoReady: videoReady,
-				// 	overlayComplete: overlayImage.complete,
-				// 	overlayHeight: overlayImage.naturalHeight,
-				// 	cameraOptions: cameraSelect.options.length,
-				// 	firstOptionValue: cameraSelect.options.length > 0 ? cameraSelect.options[0].value : 'N/A',
+				// 	allOverlaysReady: allOverlaysReady,
+				// 	camerasListed: camerasListed,
 				// 	isCapturing: isCapturing
 				// });
 			}
@@ -1171,6 +1204,12 @@
 			stopCamera(); // Stop any existing stream
 			videoFeed.classList.remove('ready'); // Hide video while loading
 			finalPhoto.style.display = 'none'; // Hide final photo preview
+			videoContainer.style.display = 'flex'; // Ensure video container is visible
+			capturedPhotosContainer.innerHTML = ''; // Clear previous results
+			capturedPhotosContainer.style.display = 'none'; // Hide results container
+			downloadButtonsContainer.innerHTML = ''; // Clear download buttons
+			downloadButtonsContainer.style.display = 'none'; // Hide download buttons container
+			emailButton.style.display = 'none'; // Hide email button
 
 			try {
 				stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -1247,10 +1286,13 @@
 			cameraSelect.innerHTML = '<option value="">Camera stopped</option>';
 			cameraSelect.disabled = true;
 
-			// Hide photo preview when camera stops
+			// Hide photo preview and results when camera stops
 			finalPhoto.style.display = 'none';
-			downloadButton.style.display = 'none';
-			whatsappButton.style.display = 'none';
+			downloadButtonsContainer.innerHTML = '';
+			downloadButtonsContainer.style.display = 'none';
+			emailButton.style.display = 'none';
+			capturedPhotosContainer.innerHTML = '';
+			capturedPhotosContainer.style.display = 'none';
 			videoContainer.style.display = 'flex'; // Show video container placeholder
 		}
 
@@ -1347,7 +1389,7 @@
 				contrastInput.min = contrastSlider.min;
 				contrastInput.max = contrastSlider.max;
 				contrastInput.step = contrastSlider.step;
-				contrastInput.value = parseFloat(contrastSlider.value).toFixed(2); // Format to 2 decimal places
+				contrastInput.value = parseFloat(contrastInput.value).toFixed(2); // Format to 2 decimal places
 			} else {
 				contrastGroup.style.display = 'none';
 			}
@@ -1591,8 +1633,8 @@
 		}
 
 
-		// Function to capture a single frame with 9:16 aspect ratio and apply overlay
-		function captureAndOverlayFrame() {
+		// Function to capture a single frame with 9:16 aspect ratio
+		function captureFrame() {
 			const videoWidth = videoFeed.videoWidth;
 			const videoHeight = videoFeed.videoHeight;
 
@@ -1617,36 +1659,124 @@
 				sourceY = (videoHeight - sourceHeight) / 2;
 			}
 
-			// Set canvas dimensions to the desired 9:16 output size
-			canvas.width = outputWidth;
-			canvas.height = outputHeight;
+			// Use a temporary canvas to get the cropped 9:16 image data
+			tempCanvas.width = sourceWidth;
+			tempCanvas.height = sourceHeight;
 
-			// Draw the cropped 9:16 segment from the video onto the canvas.
+			// Draw the cropped 9:16 segment from the video onto the temporary canvas.
 			// Apply the mirror transform *before* drawing the frame
-			context.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
-			context.save(); // Save current state
-			context.scale(-1, 1); // Mirror horizontally
-			context.drawImage(
+			tempContext.clearRect(0, 0, tempCanvas.width, tempCanvas.height); // Clear canvas
+			tempContext.save(); // Save current state
+			tempContext.scale(-1, 1); // Mirror horizontally
+			tempContext.drawImage(
 				videoFeed, // Source image
 				sourceX, sourceY, sourceWidth, sourceHeight, // Source rectangle
-				-canvas.width, 0, canvas.width, canvas.height // Destination rectangle (negate x because of mirroring)
+				-tempCanvas.width, 0, tempCanvas.width, tempCanvas.height // Destination rectangle (negate x because of mirroring)
 			);
-			context.restore(); // Restore to original state
+			tempContext.restore(); // Restore to original state
 
-			// *** Draw the overlay image on top (unrotated) ***
-			if (overlayImage.complete && overlayImage.naturalHeight !== 0) {
-				// Draw overlay scaled to cover the entire canvas (outputWidth x outputHeight)
-				context.drawImage(overlayImage, 0, 0, canvas.width, canvas.height);
-			} else {
-				console.error("Overlay image not loaded or invalid. Proceeding without overlay.");
-				// alert("Warning: Overlay image could not be loaded."); // Avoid multiple alerts
-			}
-			// ************************************************
-
-			// Get the image data URL from the canvas
-			const dataUrl = canvas.toDataURL('image/png');
+			// Get the image data URL from the temporary canvas
+			const dataUrl = tempCanvas.toDataURL('image/png');
 			return dataUrl;
 		}
+
+		// Function to process the captured frame with multiple overlays and display results
+		async function processAndDisplayPhotos(capturedDataUrl) {
+			capturedPhotosContainer.innerHTML = ''; // Clear previous results
+			downloadButtonsContainer.innerHTML = ''; // Clear previous download buttons
+			generatedImageUrls = []; // Clear previous stored URLs
+
+			capturedPhotosContainer.style.display = 'flex'; // Show results container
+
+			const capturedImg = new Image();
+			capturedImg.crossOrigin = 'anonymous';
+
+			// Use a Promise to wait for the captured image to load
+			await new Promise((resolve, reject) => {
+				capturedImg.onload = resolve;
+				capturedImg.onerror = reject;
+				capturedImg.src = capturedDataUrl;
+			});
+
+			// Process each overlay
+			overlayImages.forEach((overlayImg, index) => {
+				// Ensure overlay image is loaded
+				if (!overlayImg.complete || overlayImg.naturalHeight === 0) {
+					console.warn(`Overlay image not loaded: ${overlayImagePaths[index]}. Skipping.`);
+					return; // Skip this overlay if it failed to load
+				}
+
+				// Create a new canvas for each result
+				const resultCanvas = document.createElement('canvas');
+				const resultContext = resultCanvas.getContext('2d');
+
+				// Set canvas dimensions to the desired output size (1080x1920)
+				resultCanvas.width = outputWidth;
+				resultCanvas.height = outputHeight;
+
+				// Draw the captured image onto the result canvas, scaled to fit 1080x1920
+				// Since capturedImg is already 9:16, drawing it to fill the 1080x1920 canvas works directly.
+				resultContext.drawImage(capturedImg, 0, 0, outputWidth, outputHeight);
+
+				// Draw the current overlay image on top, scaled to cover the 1080x1920 canvas
+				resultContext.drawImage(overlayImg, 0, 0, outputWidth, outputHeight);
+
+				// Create an img element to display the result
+				const resultImg = document.createElement('img');
+				resultImg.classList.add('final-result-photo'); // Add class for styling
+				const resultDataUrl = resultCanvas.toDataURL('image/png');
+				resultImg.src = resultDataUrl;
+
+				// Store the generated URL
+				generatedImageUrls.push({ url: resultDataUrl, name: `photobooth_freedom2025_result${index + 1}.png` });
+
+				// Append the result image to the container
+				capturedPhotosContainer.appendChild(resultImg);
+
+				// Create individual download button for this image
+				const downloadIndividualButton = document.createElement('button');
+				downloadIndividualButton.classList.add('btn', 'btn-success', 'btn-sm');
+				downloadIndividualButton.textContent = `Download Photo ${index + 1}`;
+				downloadIndividualButton.addEventListener('click', () => {
+					const link = document.createElement('a');
+					link.download = `photobooth_freedom2025_result${index + 1}.png`;
+					link.href = resultDataUrl;
+					link.click();
+				});
+				downloadButtonsContainer.appendChild(downloadIndividualButton);
+			});
+
+			// Add "Download All as Zip" button if there are generated images
+			if (generatedImageUrls.length > 0) {
+				const downloadAllButton = document.createElement('button');
+				downloadAllButton.classList.add('btn', 'btn-primary', 'btn-lg'); // Use a different style for "Download All"
+				downloadAllButton.textContent = 'Download All as Zip';
+				downloadAllButton.addEventListener('click', async () => {
+					const zip = new JSZip();
+					generatedImageUrls.forEach(imgInfo => {
+						// Remove the "data:image/png;base64," prefix
+						const base64Data = imgInfo.url.replace(/^data:image\/(png|jpg);base64,/, '');
+						zip.file(imgInfo.name, base64Data, { base64: true });
+					});
+
+					try {
+						const content = await zip.generateAsync({ type: "blob" });
+						saveAs(content, "photobooth_freedom2025_all.zip");
+						console.log("Generated and downloading zip file.");
+					} catch (err) {
+						console.error("Error generating zip file:", err);
+						alert("Could not generate zip file for download.");
+					}
+				});
+				downloadButtonsContainer.appendChild(downloadAllButton);
+				downloadButtonsContainer.style.display = 'flex'; // Show the container
+			}
+
+
+			// Show email button after processing all images
+			emailButton.style.display = 'inline-block';
+		}
+
 
 		// Function to run the countdown and take a picture
 		function runCountdownAndCapture() {
@@ -1678,9 +1808,14 @@
 			autoFocusButton.disabled = true;
 			cameraSelect.disabled = true;
 			resetButton.disabled = true;
-			whatsappButton.style.display = 'none'; // Hide WhatsApp button during capture
-			downloadButton.style.display = 'none'; // Hide download button during capture
-			finalPhoto.style.display = 'none'; // Hide previous photo
+			downloadButtonsContainer.innerHTML = ''; // Clear download buttons
+			downloadButtonsContainer.style.display = 'none'; // Hide download buttons container
+			emailButton.style.display = 'none'; // Hide email button
+			finalPhoto.style.display = 'none'; // Hide previous single photo
+			capturedPhotosContainer.innerHTML = ''; // Clear previous results
+			capturedPhotosContainer.style.display = 'none'; // Hide results container
+			videoContainer.style.display = 'flex'; // Show video container
+			videoFeed.classList.add('ready'); // Show video feed
 
 			const timer = setInterval(() => {
 				count--;
@@ -1693,18 +1828,19 @@
 					clearInterval(timer);
 					countdownElement.style.display = 'none';
 
-					const dataUrl = captureAndOverlayFrame(); // Capture the single 9:16 frame with overlay
+					const capturedDataUrl = captureFrame(); // Capture the single 9:16 frame
 
-					// Display the final captured image
-					finalPhoto.src = dataUrl;
-					finalPhoto.style.display = 'block'; // Show the final photo
-					videoFeed.classList.remove('ready'); // Hide video feed
-					videoContainer.style.display = 'none'; // Hide video container
+					// Hide video feed and container
+					videoFeed.classList.remove('ready');
+					videoContainer.style.display = 'none';
+
+					// Process the captured frame with overlays and display results
+					processAndDisplayPhotos(capturedDataUrl);
 
 					isCapturing = false; // Reset capturing state
 					videoContainer.style.cursor = 'pointer'; // Restore cursor
 
-					// Re-enable controls after capture
+					// Re-enable controls after capture and processing
 					flashToggle.disabled = false;
 					flipCameraButton.disabled = false;
 					zoomSlider.disabled = false;
@@ -1726,10 +1862,6 @@
 					autoFocusButton.disabled = false;
 					cameraSelect.disabled = false; // Re-enable select
 					resetButton.disabled = false;
-					// Show WhatsApp and Download buttons after capture
-					whatsappButton.style.display = 'inline-block';
-					downloadButton.style.display = 'inline-block';
-
 
 					updateCameraControlsUI(); // Ensure controls are enabled based on capabilities
 					checkReadyState(); // Final check to enable capture button if everything is ready
@@ -1747,8 +1879,11 @@
 				captureButton.disabled = true; // Disable button immediately on click
 				// Hide previous results and show video container
 				finalPhoto.style.display = 'none';
-				downloadButton.style.display = 'none';
-				whatsappButton.style.display = 'none';
+				downloadButtonsContainer.innerHTML = ''; // Clear download buttons
+				downloadButtonsContainer.style.display = 'none'; // Hide download buttons container
+				emailButton.style.display = 'none';
+				capturedPhotosContainer.innerHTML = '';
+				capturedPhotosContainer.style.display = 'none';
 				videoContainer.style.display = 'flex'; // Show video container
 				videoFeed.classList.add('ready'); // Show video feed
 
@@ -1756,54 +1891,34 @@
 			}
 		});
 
-		// Event listener for the download button
-		downloadButton.addEventListener('click', () => {
-			const link = document.createElement('a');
-			link.download = 'photobooth_freedom2025.png';
-			link.href = finalPhoto.src;
-			link.click();
-		});
 
-		// Event listener for WhatsApp button - Opens the modal
-		whatsappButton.addEventListener('click', () => {
-			if (finalPhoto.src && finalPhoto.src !== '') {
-				whatsappModal.show(); // Show the modal
+		// Event listener for Email button (Changed from WhatsApp)
+		emailButton.addEventListener('click', () => {
+			if (generatedImageUrls.length > 0) {
+				let emailBody = "Here are your photo booth pictures!\n\n";
+				const subject = "Your Freedom 2025 Photo Booth Pictures";
+
+				// Append each image data URL to the email body
+				// WARNING: This is highly unreliable for sending images as attachments
+				// and may result in a very large email body that fails to send or load.
+				// It is NOT possible to send attachments directly via mailto link.
+				generatedImageUrls.forEach((imgInfo, index) => {
+					emailBody += `${imgInfo.name}:\n${imgInfo.url}\n\n`;
+				});
+
+				// Note: Sending from a specific domain like @github.com is NOT possible
+				// using a client-side mailto link. This requires server-side email sending.
+				// The mailto link will open the user's default email client, and the 'From' address
+				// will be whatever is configured in their client.
+				const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+
+				// Attempt to open the user's email client
+				window.location.href = mailtoUrl;
+
+				console.warn("Attempting to send images via mailto link. Direct image attachments are not supported this way. The image data is included as text in the email body, which may not work. Sending from a specific domain is not possible client-side.");
+
 			} else {
-				console.warn("No final photo available to share on WhatsApp.");
-				// Optionally show a message to the user
-			}
-		});
-
-		// Event listener for the Send button inside the WhatsApp modal
-		sendWhatsappButton.addEventListener('click', () => {
-			const phoneNumber = whatsappNumberInput.value.trim();
-			const imageDataUrl = finalPhoto.src;
-
-			if (phoneNumber === '') {
-				alert("Please enter a valid phone number.");
-				return;
-			}
-
-			if (imageDataUrl && imageDataUrl !== '') {
-				// Construct the WhatsApp Web/App link
-				// Format: https://wa.me/phonenumber?text=urlencodedtext
-				// Phone number should include country code, no + or leading zeros.
-				const message = encodeURIComponent("Check out my photo booth picture!");
-				// Including the data URL in the text is unreliable for sending the image itself.
-				// It might just send the text string.
-				const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}%0A${encodeURIComponent(imageDataUrl)}`;
-
-				// Try opening in a new window/tab
-				window.open(whatsappUrl, '_blank');
-
-				console.warn("Sharing image data directly via WhatsApp link may not work on all devices/browsers, especially for large images. The link attempts to open a chat with the number and include the image data as text.");
-
-				whatsappModal.hide(); // Hide the modal after attempting to send
-				whatsappNumberInput.value = ''; // Clear the input field
-			} else {
-				console.warn("No final photo available to share on WhatsApp.");
-				whatsappModal.hide(); // Hide the modal
-				whatsappNumberInput.value = ''; // Clear the input field
+				console.warn("No images available to send via email.");
 				// Optionally show a message to the user
 			}
 		});
@@ -1823,7 +1938,7 @@
 			if (!isCapturing) {
 				const videoRect = videoContainer.getBoundingClientRect();
 				const offsetX = event.clientX - videoRect.left;
-				const offsetY = event.clientY - videoRect.top;
+				const offsetY = event.clientY - videoRect.clientY; // Use clientY for vertical position
 
 				// Position the focus indicator
 				focusIndicator.style.left = `${offsetX}px`;
@@ -2059,13 +2174,14 @@
 
 		// --- Initialization ---
 
-		// Check ready state when overlay image loads
-		overlayImage.onload = checkReadyState;
-		overlayImage.onerror = () => {
-			console.error("Error loading overlay image. Please check the path: " + overlayImagePath);
-			// No alert here, let checkReadyState handle button state
-			checkReadyState();
-		};
+		// Check ready state when overlay images load
+		overlayImages.forEach(img => {
+			img.onload = checkReadyState;
+			img.onerror = () => {
+				console.error("Error loading overlay image: " + img.src);
+				checkReadyState(); // Still check ready state even if one fails
+			};
+		});
 
 
 		// Start the camera when the page loads
@@ -2098,4 +2214,4 @@
 
 </body>
 
-</html>		
+</html>
