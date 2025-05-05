@@ -22,6 +22,7 @@
 		body {
 			background-color: #000; /* Set body background to black */
 			color: white; /* Set default text color to white */
+			overflow-x: hidden; /* Prevent horizontal scroll */
 		}
 
 		#photo-booth-section {
@@ -33,6 +34,7 @@
 			display: flex; /* Use flexbox for main layout */
 			flex-direction: column; /* Stack elements vertically */
 			align-items: center; /* Center content horizontally */
+			min-height: 100vh; /* Ensure section takes at least full viewport height */
 		}
 
 			/* Ensure headings and paragraphs are white */
@@ -73,43 +75,64 @@
 
 		/* Container for video and controls */
 		#camera-area {
-			display: flex; /* Arrange video and controls side-by-side by default */
+			display: flex; /* Arrange video/photo and controls side-by-side by default */
 			align-items: flex-start; /* Align items to the top */
 			justify-content: center; /* Center the camera area */
-			width: 95%; /* Use more width for landscape layout */
+			width: 95%; /* Use most width */
 			max-width: 1200px; /* Max width for the camera area */
-			/* Removed margin-bottom as it's now above */
+			margin-bottom: 20px; /* Space below the camera area */
+			flex-grow: 1; /* Allow camera area to grow */
 		}
 
 
-		#video-container {
+		#video-container,
+		#final-photo-container {
 			position: relative;
-			flex-grow: 1; /* Allow video to take available space */
-			aspect-ratio: 16 / 9; /* Maintain aspect ratio */
+			flex-grow: 1; /* Allow video/photo to take available space */
 			border-radius: 25px;
 			overflow: hidden;
 			box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); /* Stronger shadow for depth */
-			cursor: pointer; /* Indicate clickability for focus */
-			background-color: #000; /* Black background if video is not ready */
-			margin-right: 20px; /* Space between video and controls on large screens */
-			max-height: calc(100vh - 300px); /* Limit video height to prevent overflow on large screens */
+			background-color: #000; /* Black background if video/photo is not ready */
+			margin-right: 20px; /* Space between video/photo and controls on large screens */
+			display: flex; /* Use flexbox to center video/image */
+			justify-content: center;
+			align-items: center;
+			width: 100%; /* Take full width within its flex container */
+			max-width: 500px; /* Limit max width for a comfortable 9:16 view */
+			aspect-ratio: 9 / 16; /* Set container aspect ratio to 9:16 */
+			max-height: calc(100vh - 300px); /* Limit height to leave space for controls/header/footer */
 		}
 
+		#video-container {
+			cursor: pointer; /* Indicate clickability for focus */
+		}
+
+
 		#video-feed {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
+			display: block; /* Ensure video takes up space */
+			width: 100%; /* Fill container width */
+			height: 100%; /* Fill container height */
+			object-fit: cover; /* Cover the container while maintaining aspect ratio */
 			transform: scaleX(-1); /* Mirror the feed */
 			transition: opacity 0.5s ease-in-out;
 			opacity: 0; /* Start hidden until can play */
+			/* aspect-ratio is handled by the container */
 		}
 
 			#video-feed.ready {
 				opacity: 1; /* Fade in when ready */
 			}
+
+		#final-photo {
+			display: block; /* Ensure image takes up space */
+			width: 100%; /* Fill container width */
+			height: 100%; /* Fill container height */
+			object-fit: cover; /* Cover the container while maintaining aspect ratio */
+			border: 0;
+			border-radius: 25px; /* Match container radius */
+			box-shadow: none; /* Shadow is on the container */
+			/* aspect-ratio is handled by the container */
+		}
 
 
 		#video-overlay {
@@ -142,7 +165,7 @@
 				content: '';
 				position: absolute;
 				top: 0;
-				left: 33.33%;
+				left: 33.33%; /* Position first vertical line */
 				width: 1px;
 				height: 100%;
 				background-color: rgba(255, 255, 255, 0.2); /* Vertical grid line */
@@ -152,19 +175,36 @@
 				content: '';
 				position: absolute;
 				top: 0;
-				left: 66.66%;
+				left: 66.66%; /* Position second vertical line */
 				width: 1px;
 				height: 100%;
 				background-color: rgba(255, 255, 255, 0.2); /* Vertical grid line */
 			}
 
 			#grid-overlay > :nth-child(1) {
-				grid-column: 1 / span 3;
-				grid-row: 2 / span 1;
-				border-top: 1px solid rgba(255, 255, 255, 0.2); /* Horizontal grid line */
-				border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Horizontal grid line */
+				/* This div is just a placeholder to help visualize the grid structure */
+				/* We draw the horizontal lines using ::before and ::after on the parent */
+				display: none; /* Hide the placeholder div */
 			}
-		/* The other horizontal line is covered by the first child span */
+
+			#grid-overlay::before,
+			#grid-overlay::after {
+				/* Add horizontal lines */
+				content: '';
+				position: absolute;
+				left: 0;
+				width: 100%;
+				height: 1px;
+				background-color: rgba(255, 255, 255, 0.2);
+			}
+
+			#grid-overlay::before {
+				top: 33.33%; /* Position first horizontal line */
+			}
+
+			#grid-overlay::after {
+				top: 66.66%; /* Position second horizontal line */
+			}
 
 
 		#countdown {
@@ -226,7 +266,8 @@
 			flex-direction: column; /* Stack controls vertically */
 			align-items: center; /* Center controls horizontally within the bar */
 			overflow-y: auto; /* Allow scrolling if controls exceed height */
-			max-height: calc(100vh - 300px); /* Limit height to prevent overflow on large screens */
+			/* max-height: calc(100vh - 300px); Remove fixed height constraint */
+			height: auto; /* Allow height to be determined by content */
 		}
 
 		.controls-top-bar {
@@ -525,38 +566,23 @@
 
 
 		#captured-photos-container {
-			display: flex;
-			justify-content: center;
-			gap: 10px;
-			margin-top: 30px;
-			margin-bottom: 20px;
-			flex-wrap: wrap;
-		}
-
-		.captured-photo {
-			width: 80px;
-			height: auto;
-			border: 3px solid rgba(255, 255, 255, 0.5);
-			border-radius: 10px;
-			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+			display: none; /* Hide the container for individual captured photos */
 		}
 
 		#final-photo-container {
 			margin-top: 30px;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			max-width: 500px;
-			margin: 30px auto 0 auto;
+			/* Removed max-width and margin: auto */
+			flex-grow: 1; /* Allow it to grow */
+			width: 100%; /* Take full width of parent */
+			height: auto; /* Adjust height based on content */
+			max-height: calc(100vh - 300px); /* Limit height to leave space for controls/header/footer */
+			margin-right: 0; /* Remove margin right on small screens */
+			margin-bottom: 20px; /* Add space below */
 		}
 
 		#final-photo {
-			max-width: 100%;
-			height: auto;
-			border: 0;
-			border-radius: 25px;
-			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-			display: none;
+			/* Styles moved to #final-photo */
+			display: none; /* Start hidden */
 		}
 
 		#download-button, #whatsapp-button {
@@ -632,105 +658,161 @@
 
 
 		/* --- Responsive Styles --- */
-		@media (max-width: 768px) {
+		@media (min-width: 768px) {
+			/* On larger screens, arrange video/photo and controls side-by-side */
 			#camera-area {
-				flex-direction: column; /* Stack video and controls vertically */
-				align-items: center; /* Center items horizontally */
-				width: 100%; /* Use full width on small screens */
-				margin-bottom: 20px; /* Space below the camera area */
+				flex-direction: row;
+				align-items: flex-start; /* Align to the top */
 			}
 
-			#video-container {
-				margin-right: 0; /* Remove right margin */
-				margin-bottom: 20px; /* Add bottom margin */
-				width: 95%; /* Use most of the width */
-				max-height: none; /* Remove max height constraint */
-				height: auto; /* Allow height to adjust based on aspect ratio */
+			#video-container,
+			#final-photo-container {
+				margin-right: 20px; /* Space between video/photo and controls */
+				margin-bottom: 0; /* Remove bottom margin */
+				/* On large screens, let the video/photo take up available space */
+				max-width: none; /* Remove max width constraint */
+				height: auto; /* Allow height to adjust */
+				flex-basis: 0; /* Allow flex-grow to control size */
 			}
 
 			#camera-controls-container {
-				width: 95%; /* Use most of the width */
-				max-height: none; /* Remove max height constraint */
-				padding: 10px; /* Adjust padding */
-				overflow-y: visible; /* Allow content to push container height */
+				width: 200px; /* Fixed width for controls */
+				height: auto; /* Allow height to be determined by content */
+				overflow-y: auto; /* Keep scrolling for controls if needed */
 			}
 
 			.controls-main-bar {
-				flex-direction: row; /* Arrange main buttons horizontally */
-				justify-content: space-around; /* Distribute space */
-				gap: 10px; /* Adjust gap */
-				margin-bottom: 10px; /* Adjust margin */
+				flex-direction: column; /* Stack main buttons vertically */
+				gap: 15px;
 			}
 
 			.controls-left,
 			.controls-right,
 			.controls-center {
-				flex-direction: row; /* Arrange items horizontally within these sections */
-				justify-content: center; /* Center items */
-				padding: 0; /* Remove padding */
-				gap: 10px; /* Adjust gap */
+				flex-direction: column; /* Stack items vertically */
+				gap: 10px;
 			}
 
-			.controls-left {
-				order: 1; /* Keep reset button on the left */
+			#zoom-controls {
+				flex-direction: column; /* Stack zoom controls vertically */
 			}
 
+			.zoom-slider {
+				transform: rotate(90deg); /* Rotate slider back to vertical */
+				margin: 20px 0; /* Adjust margin */
+				width: 5px;
+				height: 100px;
+			}
+
+			.advanced-controls-bar {
+				flex-direction: column; /* Stack advanced controls vertically */
+				gap: 15px;
+			}
+
+			.slider-input-container {
+				flex-direction: column; /* Stack slider and input vertically */
+				gap: 5px;
+			}
+
+			.control-group input[type="range"] {
+				width: 100%; /* Slider takes full width of container */
+			}
+
+			.control-group input[type="number"] {
+				width: 80px; /* Adjust width */
+				font-size: 0.9em;
+			}
+		}
+
+		@media (max-width: 767.98px) {
+			/* On small screens, stack video/photo and controls vertically */
+			#camera-area {
+				flex-direction: column;
+				align-items: center;
+				width: 100%;
+				margin-bottom: 20px;
+			}
+
+			#video-container,
+			#final-photo-container {
+				margin-right: 0; /* Remove right margin */
+				margin-bottom: 20px; /* Add bottom margin */
+				width: 95%; /* Use most of the width */
+				max-width: none; /* Remove max width constraint */
+				height: auto; /* Allow height to adjust */
+			}
+
+			#camera-controls-container {
+				width: 95%; /* Use most of the width */
+				padding: 10px;
+				overflow-y: visible; /* Allow content to push container height */
+				height: auto; /* Allow height to be determined by content */
+			}
+
+			.controls-main-bar {
+				flex-direction: row; /* Arrange main buttons horizontally */
+				justify-content: space-around;
+				gap: 10px;
+				margin-bottom: 10px;
+			}
+
+			.controls-left,
+			.controls-right,
 			.controls-center {
-				order: 2; /* Keep shutter button in the center */
-			}
-
-			.controls-right {
-				order: 3; /* Keep other buttons on the right */
+				flex-direction: row; /* Arrange items horizontally */
+				justify-content: center;
+				padding: 0;
+				gap: 10px;
 			}
 
 			#zoom-controls {
 				flex-direction: row; /* Arrange zoom controls horizontally */
-				padding: 5px 10px; /* Adjust padding */
-				width: auto; /* Allow width to adjust */
+				padding: 5px 10px;
+				width: auto;
 			}
 
 			.zoom-slider {
-				width: 100px; /* Make slider horizontal */
-				height: 5px; /* Adjust height */
 				transform: rotate(0deg); /* Remove rotation */
 				margin: 0 10px; /* Adjust margin */
+				width: 100px;
+				height: 5px;
 			}
 
 			.advanced-controls-bar {
 				flex-direction: row; /* Arrange advanced controls horizontally */
-				flex-wrap: wrap; /* Allow controls to wrap */
-				justify-content: center; /* Center control groups */
-				gap: 10px; /* Adjust gap between control groups */
-				margin-top: 10px; /* Adjust margin */
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: 10px;
+				margin-top: 10px;
 			}
 
 			.control-group {
-				width: auto; /* Allow control groups to size based on content */
-				padding: 0 5px; /* Adjust padding */
-				gap: 2px; /* Adjust gap */
+				width: auto;
+				padding: 0 5px;
+				gap: 2px;
 			}
 
 				.control-group label {
-					font-size: 0.7em; /* Further reduce label size */
+					font-size: 0.7em;
 				}
 
 			.slider-input-container {
 				flex-direction: row; /* Arrange slider and input horizontally */
-				gap: 5px; /* Adjust gap */
-				width: auto; /* Allow container to size based on content */
+				gap: 5px;
+				width: auto;
 			}
 
 			.control-group input[type="range"] {
-				width: 80px; /* Adjust slider width */
+				width: 80px;
 			}
 
 			.control-group input[type="number"] {
-				width: 60px; /* Further reduce number input width */
-				font-size: 0.8em; /* Adjust font size */
+				width: 60px;
+				font-size: 0.8em;
 			}
 
 			#auto-focus-button {
-				margin-top: 10px; /* Adjust margin */
+				margin-top: 10px;
 			}
 		}
 	</style>
@@ -861,7 +943,7 @@
 						<canvas id="canvas"></canvas>
 						<canvas id="temp-canvas"></canvas>
 						<div id="final-photo-container">
-							<img id="final-photo" alt="Combined Photo">
+							<img id="final-photo" alt="Captured Photo">
 						</div>
 
 						<div class="d-flex justify-content-center mt-4">
@@ -971,31 +1053,26 @@
 
 		const canvas = document.getElementById('canvas'); // Main canvas for final image
 		const context = canvas.getContext('2d');
-		const tempCanvas = document.getElementById('temp-canvas'); // Temporary canvas for combining
+		// tempCanvas is no longer strictly needed for combining, but keep it just in case future features need it
+		const tempCanvas = document.getElementById('temp-canvas');
 		const tempContext = tempCanvas.getContext('2d');
-		const capturedPhotosContainer = document.getElementById('captured-photos-container');
+
+		const capturedPhotosContainer = document.getElementById('captured-photos-container'); // Will be hidden
 		const finalPhoto = document.getElementById('final-photo');
 		const downloadButton = document.getElementById('download-button');
 
 		let stream = null;
-		let capturedImages = [];
 		let isCapturing = false; // State variable to prevent interaction during capture
 		let isFlashOn = false; // State variable for flash
 		let currentFocusMode = 'continuous'; // Track current focus mode
 
-		const sourceAspectRatio = 16 / 9; // We will attempt to capture from a 16:9 area of the video feed
-		const individualCaptureAspectRatio = 9 / 8; // Each captured photo needs this ratio to stack into 9:16
-		// The final output will effectively be 9:16 after combining two 9:8 images
+		// Define the desired output aspect ratio (9:16)
+		const outputAspectRatio = 9 / 16;
 
-		// Set a target resolution for the individual captured photos (9:8 ratio)
-		const individualCaptureWidth = 450; // Example width for the 9:8 capture
-		const individualCaptureHeight = individualCaptureWidth / individualCaptureAspectRatio;
+		// Define a target resolution for the final output (maintaining 9:16 ratio)
+		const outputWidth = 450; // Example width
+		const outputHeight = outputWidth / outputAspectRatio; // Calculate height based on ratio (e.g., 450 / (9/16) = 800)
 
-		// The final canvas dimensions will be based on stacking two individual captures
-		const finalCanvasWidth = individualCaptureWidth;
-		const finalCanvasHeight = individualCaptureHeight * 2; // 9:16 aspect ratio (450x800)
-
-		const rotationDegrees = 0; // Rotation angle in degrees
 
 		// *** IMPORTANT: Set the path to your PNG overlay image here ***
 		const overlayImagePath = 'images/PhotoBooth/FreedomCoachRaymondFrame.png'; // <--- REPLACE WITH YOUR PNG PATH
@@ -1090,9 +1167,10 @@
 
 
 		// Function to start camera feed with specific constraints (or default)
-		async function startCamera(constraints = { video: { facingMode: 'user', aspectRatio: { ideal: sourceAspectRatio } } }) {
+		async function startCamera(constraints = { video: { facingMode: 'user', aspectRatio: { ideal: 16 / 9 } } }) { // Request 16:9 initially
 			stopCamera(); // Stop any existing stream
 			videoFeed.classList.remove('ready'); // Hide video while loading
+			finalPhoto.style.display = 'none'; // Hide final photo preview
 
 			try {
 				stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -1168,6 +1246,12 @@
 			resetButton.disabled = true;
 			cameraSelect.innerHTML = '<option value="">Camera stopped</option>';
 			cameraSelect.disabled = true;
+
+			// Hide photo preview when camera stops
+			finalPhoto.style.display = 'none';
+			downloadButton.style.display = 'none';
+			whatsappButton.style.display = 'none';
+			videoContainer.style.display = 'flex'; // Show video container placeholder
 		}
 
 		// Function to switch camera based on deviceId
@@ -1180,7 +1264,7 @@
 			const constraints = {
 				video: {
 					deviceId: { exact: deviceId },
-					aspectRatio: { ideal: sourceAspectRatio }
+					aspectRatio: { ideal: 16 / 9 } // Request 16:9 from the new camera
 				}
 			};
 			startCamera(constraints); // Start camera with the selected device
@@ -1507,55 +1591,59 @@
 		}
 
 
-		// Function to capture a frame: extracts a 9:8 segment from a central 16:9 area of the video feed
-		function captureFrame() {
+		// Function to capture a single frame with 9:16 aspect ratio and apply overlay
+		function captureAndOverlayFrame() {
 			const videoWidth = videoFeed.videoWidth;
 			const videoHeight = videoFeed.videoHeight;
 
-			// Calculate the largest 16:9 area that fits within the video feed dimensions
-			let sourceWidth_16_9, sourceHeight_16_9;
-			let sourceX_video_16_9, sourceY_video_16_9; // Top-left corner of the 16:9 area on the video
+			// Calculate the source rectangle on the video feed for a 9:16 crop
+			let sourceWidth, sourceHeight;
+			let sourceX, sourceY; // Top-left corner of the source rectangle on the video
 
 			const videoAspectRatio = videoWidth / videoHeight;
+			const targetAspectRatio = outputAspectRatio; // 9/16
 
-			if (videoAspectRatio > sourceAspectRatio) {
-				// Video is wider than 16:9, crop video sides to get the widest possible 16:9 source
-				sourceHeight_16_9 = videoHeight;
-				sourceWidth_16_9 = videoHeight * sourceAspectRatio;
-				sourceX_video_16_9 = (videoWidth - sourceWidth_16_9) / 2;
-				sourceY_video_16_9 = 0;
+			if (videoAspectRatio > targetAspectRatio) {
+				// Video is wider than 9:16, crop video sides
+				sourceHeight = videoHeight;
+				sourceWidth = videoHeight * targetAspectRatio;
+				sourceX = (videoWidth - sourceWidth) / 2;
+				sourceY = 0;
 			} else {
-				// Video is taller or equal to 16:9, crop video top/bottom to get the tallest possible 16:9 source
-				sourceWidth_16_9 = videoWidth;
-				sourceHeight_16_9 = videoWidth / sourceAspectRatio;
-				sourceX_video_16_9 = 0;
-				sourceY_video_16_9 = (videoHeight - sourceHeight_16_9) / 2;
+				// Video is taller or equal to 9:16, crop video top/bottom
+				sourceWidth = videoWidth;
+				sourceHeight = videoWidth / targetAspectRatio;
+				sourceX = 0;
+				sourceY = (videoHeight - sourceHeight) / 2;
 			}
 
-			// Dimensions of the 9:8 segment needed from the 16:9 source area
-			const segmentHeight_source = sourceHeight_16_9;
-			const segmentWidth_source = segmentHeight_source * individualCaptureAspectRatio;
+			// Set canvas dimensions to the desired 9:16 output size
+			canvas.width = outputWidth;
+			canvas.height = outputHeight;
 
-			// Coordinates to crop the 9:8 segment from the 16:9 source area
-			const segmentX_source = sourceX_video_16_9 + (sourceWidth_16_9 - segmentWidth_source) / 2;
-			const segmentY_source = sourceY_video_16_9;
-
-			// Set canvas dimensions to the desired 9:8 output size for the captured image
-			canvas.width = individualCaptureWidth;
-			canvas.height = individualCaptureHeight;
-
-			// Draw the cropped 9:8 segment from the 16:9 source area onto the 9:8 canvas.
+			// Draw the cropped 9:16 segment from the video onto the canvas.
 			// Apply the mirror transform *before* drawing the frame
+			context.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
 			context.save(); // Save current state
 			context.scale(-1, 1); // Mirror horizontally
 			context.drawImage(
 				videoFeed, // Source image
-				segmentX_source, segmentY_source, segmentWidth_source, segmentHeight_source, // Source rectangle
+				sourceX, sourceY, sourceWidth, sourceHeight, // Source rectangle
 				-canvas.width, 0, canvas.width, canvas.height // Destination rectangle (negate x because of mirroring)
 			);
 			context.restore(); // Restore to original state
 
-			// Get the image data URL from the 9:8 canvas
+			// *** Draw the overlay image on top (unrotated) ***
+			if (overlayImage.complete && overlayImage.naturalHeight !== 0) {
+				// Draw overlay scaled to cover the entire canvas (outputWidth x outputHeight)
+				context.drawImage(overlayImage, 0, 0, canvas.width, canvas.height);
+			} else {
+				console.error("Overlay image not loaded or invalid. Proceeding without overlay.");
+				// alert("Warning: Overlay image could not be loaded."); // Avoid multiple alerts
+			}
+			// ************************************************
+
+			// Get the image data URL from the canvas
 			const dataUrl = canvas.toDataURL('image/png');
 			return dataUrl;
 		}
@@ -1591,7 +1679,8 @@
 			cameraSelect.disabled = true;
 			resetButton.disabled = true;
 			whatsappButton.style.display = 'none'; // Hide WhatsApp button during capture
-
+			downloadButton.style.display = 'none'; // Hide download button during capture
+			finalPhoto.style.display = 'none'; // Hide previous photo
 
 			const timer = setInterval(() => {
 				count--;
@@ -1604,155 +1693,50 @@
 					clearInterval(timer);
 					countdownElement.style.display = 'none';
 
-					const dataUrl = captureFrame(); // Capture the 9:8 frame
-					capturedImages.push(dataUrl);
-					displayCapturedPhoto(dataUrl); // Display the captured 9:8 frame
+					const dataUrl = captureAndOverlayFrame(); // Capture the single 9:16 frame with overlay
 
-					if (capturedImages.length < 2) { // Capture two photos
-						// Take the second photo after a brief pause
-						setTimeout(runCountdownAndCapture, 1000); // 1-second pause
-					} else {
-						// Combine photos and finish
-						combinePhotos();
-						isCapturing = false; // Reset capturing state
-						videoContainer.style.cursor = 'pointer'; // Restore cursor
+					// Display the final captured image
+					finalPhoto.src = dataUrl;
+					finalPhoto.style.display = 'block'; // Show the final photo
+					videoFeed.classList.remove('ready'); // Hide video feed
+					videoContainer.style.display = 'none'; // Hide video container
 
-						// Re-enable controls after capture sequence
-						flashToggle.disabled = false;
-						flipCameraButton.disabled = false;
-						zoomSlider.disabled = false;
-						zoomOutButton.disabled = false;
-						zoomInButton.disabled = false;
-						brightnessSlider.disabled = false;
-						brightnessInput.disabled = false;
-						contrastSlider.disabled = false;
-						contrastInput.disabled = false;
-						isoSlider.disabled = false;
-						isoInput.disabled = false;
-						exposureSlider.disabled = false;
-						exposureInput.disabled = false;
-						// Focus slider/input enabled state depends on currentFocusMode
-						const isManual = currentFocusMode === 'manual';
-						focusSlider.disabled = !isManual;
-						focusInput.disabled = !isManual;
+					isCapturing = false; // Reset capturing state
+					videoContainer.style.cursor = 'pointer'; // Restore cursor
 
-						autoFocusButton.disabled = false;
-						cameraSelect.disabled = false; // Re-enable select
-						resetButton.disabled = false;
-						// Show WhatsApp button after combining
-						whatsappButton.style.display = 'inline-block';
+					// Re-enable controls after capture
+					flashToggle.disabled = false;
+					flipCameraButton.disabled = false;
+					zoomSlider.disabled = false;
+					zoomOutButton.disabled = false;
+					zoomInButton.disabled = false;
+					brightnessSlider.disabled = false;
+					brightnessInput.disabled = false;
+					contrastSlider.disabled = false;
+					contrastInput.disabled = false;
+					isoSlider.disabled = false;
+					isoInput.disabled = false;
+					exposureSlider.disabled = false;
+					exposureInput.disabled = false;
+					// Focus slider/input enabled state depends on currentFocusMode
+					const isManual = currentFocusMode === 'manual';
+					focusSlider.disabled = !isManual;
+					focusInput.disabled = !isManual;
+
+					autoFocusButton.disabled = false;
+					cameraSelect.disabled = false; // Re-enable select
+					resetButton.disabled = false;
+					// Show WhatsApp and Download buttons after capture
+					whatsappButton.style.display = 'inline-block';
+					downloadButton.style.display = 'inline-block';
 
 
-						updateCameraControlsUI(); // Ensure controls are enabled based on capabilities
-						checkReadyState(); // Final check to enable capture button if everything is ready
-					}
+					updateCameraControlsUI(); // Ensure controls are enabled based on capabilities
+					checkReadyState(); // Final check to enable capture button if everything is ready
 				}
 			}, 1000);
 		}
 
-		// Function to display individual captured photos
-		function displayCapturedPhoto(dataUrl) {
-			const img = document.createElement('img');
-			img.src = dataUrl;
-			img.classList.add('captured-photo');
-			// Optional: Add a class to indicate which photo it is (e.g., 'photo-1', 'photo-2')
-			img.classList.add(`photo-${capturedImages.length}`);
-			capturedPhotosContainer.appendChild(img);
-		}
-
-		// Function to combine the two 9:8 photos, rotate the collage, and add the overlay
-		function combinePhotos() {
-			if (capturedImages.length === 2) {
-				const img1 = new Image();
-				const img2 = new Image();
-
-				// Use a Promise to wait for both 9:8 images to load
-				Promise.all([
-					new Promise((resolve, reject) => {
-						img1.onload = () => resolve();
-						img1.onerror = reject;
-						img1.src = capturedImages[0];
-					}),
-					new Promise((resolve, reject) => {
-						img2.onload = () => resolve();
-						img2.onerror = reject;
-						img2.src = capturedImages[1];
-					})
-				])
-					.then(() => {
-						// The temporary canvas size for combining the two 9:8 images vertically (9:16 ratio)
-						tempCanvas.width = individualCaptureWidth;
-						tempCanvas.height = individualCaptureHeight * 2;
-
-						// Draw the first 9:8 image at the top onto the temporary canvas
-						tempContext.drawImage(img1, 0, 0);
-						// Draw the second 9:8 image below the first onto the temporary canvas
-						tempContext.drawImage(img2, 0, img1.height);
-
-						// Set the main canvas dimensions for the final 9:16 output
-						canvas.width = finalCanvasWidth; // 450
-						canvas.height = finalCanvasHeight; // 800
-
-						// Clear the main canvas
-						context.clearRect(0, 0, canvas.width, canvas.height);
-
-						// *** Rotate the combined image on the main canvas ***
-						context.save(); // Save current context state
-
-						// Translate origin to the center of the main canvas
-						context.translate(canvas.width / 2, canvas.height / 2);
-
-						// Rotate by the specified degrees (convert to radians)
-						context.rotate(rotationDegrees * Math.PI / 180);
-
-						// Draw the temporary canvas content (the combined 9:16 image) onto the main canvas,
-						// centered after rotation
-						context.drawImage(tempCanvas, -tempCanvas.width / 2, -tempCanvas.height / 2);
-
-						context.restore(); // Restore context to remove rotation/translation
-
-						// ****************************************************
-
-						// *** Draw the overlay image on top (unrotated) ***
-						if (overlayImage.complete && overlayImage.naturalHeight !== 0) {
-							// Draw overlay scaled to cover the entire main canvas (450x800)
-							context.drawImage(overlayImage, 0, 0, canvas.width, canvas.height);
-						} else {
-							console.error("Overlay image not loaded or invalid. Proceeding without overlay.");
-							// alert("Warning: Overlay image could not be loaded."); // Avoid multiple alerts
-						}
-						// ************************************************
-
-
-						// Display the final combined and rotated image
-						finalPhoto.src = canvas.toDataURL('image/png');
-						finalPhoto.style.display = 'block';
-						downloadButton.style.display = 'inline-block';
-						whatsappButton.style.display = 'inline-block'; // Show WhatsApp button
-
-
-						// Clean up individual displayed photos
-						capturedPhotosContainer.innerHTML = '';
-
-						// Reset for next session
-						capturedImages = [];
-						// captureButton.textContent = 'Start Photo Session'; // Text is now hidden by CSS
-
-						checkReadyState(); // Re-enable button after everything is done if ready
-					})
-					.catch(error => {
-						console.error("Error loading captured images for combining: ", error);
-						alert("Error processing photos. Please try again.");
-						// Reset state on error
-						capturedImages = [];
-						capturedPhotosContainer.innerHTML = '';
-						// captureButton.textContent = 'Start Photo Session';
-						isCapturing = false; // Reset capturing state
-						videoContainer.style.cursor = 'pointer'; // Restore cursor
-						checkReadyState(); // Re-enable button on error if ready
-					});
-			}
-		}
 
 		// --- Event Listeners ---
 
@@ -1760,13 +1744,13 @@
 		captureButton.addEventListener('click', () => {
 			// Only start the sequence if not already in progress and button is enabled
 			if (!isCapturing && !captureButton.disabled) {
-				// captureButton.textContent = 'Get Ready...'; // Text is hidden by CSS
 				captureButton.disabled = true; // Disable button immediately on click
-				// Clear previous results
+				// Hide previous results and show video container
 				finalPhoto.style.display = 'none';
 				downloadButton.style.display = 'none';
-				whatsappButton.style.display = 'none'; // Hide WhatsApp button
-				capturedPhotosContainer.innerHTML = '';
+				whatsappButton.style.display = 'none';
+				videoContainer.style.display = 'flex'; // Show video container
+				videoFeed.classList.add('ready'); // Show video feed
 
 				runCountdownAndCapture();
 			}
@@ -2087,7 +2071,7 @@
 		// Start the camera when the page loads
 		// This initial call will request permission and trigger enumeration
 		// Start with user-facing camera as default preference
-		startCamera({ video: { facingMode: 'user', aspectRatio: { ideal: sourceAspectRatio } } });
+		startCamera({ video: { facingMode: 'user', aspectRatio: { ideal: 16 / 9 } } }); // Request 16:9 initially
 
 
 		// Optional: Stop camera when the page is closed or navigated away
@@ -2105,7 +2089,7 @@
 				} else {
 					// If no device was selected (e.g., initial load failed or no cameras found),
 					// try starting with default constraints again.
-					startCamera({ video: { facingMode: 'user', aspectRatio: { ideal: sourceAspectRatio } } });
+					startCamera({ video: { facingMode: 'user', aspectRatio: { ideal: 16 / 9 } } }); // Request 16:9 initially
 				}
 			}
 		});
@@ -2114,4 +2098,4 @@
 
 </body>
 
-</html>
+</html>		
